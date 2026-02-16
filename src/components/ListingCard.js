@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ListingCard({ listing }) {
   const formatPrice = (price, currency = "XAF") => {
     return new Intl.NumberFormat("fr-FR", {
@@ -113,9 +115,12 @@ export default function ListingCard({ listing }) {
               <p className="text-xs text-zinc-500">par mois</p>
             )}
           </div>
-          <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800">
+          <Link
+            href={`/listings/${listing.id}`}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800"
+          >
             Voir détails
-          </button>
+          </Link>
         </div>
       </div>
     </div>

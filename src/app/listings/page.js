@@ -131,7 +131,14 @@ export default function ListingsPage() {
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard key={listing.id} listing={listing}>
+                <a
+                  href={`/listings/${listing.id}`}
+                  className="block mt-2 text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Voir les détails
+                </a>
+              </ListingCard>
             ))}
           </div>
         )}
