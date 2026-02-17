@@ -5,11 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+
 export default function SignupPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [role, setRole] = useState("tenant");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -21,22 +26,76 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const supabase = createClient();
+      
+      // Store profile data in Supabase user_metadata during signup
+      const profileData = {
+        first_name: firstName,
+        last_name: lastName,
+        role,
+      };
+      console.log('Profile data to store in user_metadata:', profileData);
+      
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: profileData,
+        },
       });
+      
+      console.log('Supabase signUp response:', { user: data?.user, hasSession: !!data?.session });
+      
       if (signUpError) throw signUpError;
 
-      // Depending on your Supabase settings, user may need to confirm email.
+      // Case 1: User created but needs email confirmation (no session yet)
       if (data?.user && !data?.session) {
         setSuccess(
-          "Compte créé. Vérifie ton email pour confirmer ton inscription, puis connecte-toi.",
+          "Compte créé! Vérifie ton email pour confirmer ton inscription, puis connecte-toi.",
         );
+        console.log('User created, email confirmation required. Profile data is stored in user_metadata.');
         return;
       }
 
-      router.replace("/dashboard");
-      router.refresh();
+      // Case 2: User created AND session exists (email confirmation disabled)
+      if (data?.session) {
+        console.log('User created with session, syncing profile...');
+        try {
+          console.log('Syncing user profile with API:', {
+            api_url: API_URL,
+            access_token: data.session.access_token?.substring(0, 20) + '...',
+            data: { first_name: firstName, last_name: lastName, role },
+          });
+
+          const syncRes = await fetch(`${API_URL}/users/sync`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${data.session.access_token}`,
+            },
+            body: JSON.stringify({
+              first_name: firstName,
+              last_name: lastName,
+              role,
+            }),
+          });
+
+          const syncData = await syncRes.json();
+          console.log('Sync response:', syncData);
+
+          if (!syncRes.ok) {
+            console.error('Sync failed with status:', syncRes.status, syncData);
+            // Continue anyway - user was created in Supabase
+          } else {
+            console.log('User profile synced successfully');
+          }
+        } catch (syncErr) {
+          console.error("User sync error (non-fatal):", syncErr);
+          // Continue anyway - user was created in Supabase
+        }
+
+        router.replace("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError(err?.message ?? "Impossible de créer le compte.");
     } finally {
@@ -56,6 +115,29 @@ export default function SignupPage() {
         </p>
 
         <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Prénom</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
+                placeholder="Jean"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Nom</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
+                placeholder="Dupont"
+              />
+            </div>
+          </div>
+
           <div className="space-y-1">
             <label className="text-sm font-medium">Email</label>
             <input
@@ -78,6 +160,18 @@ export default function SignupPage() {
               autoComplete="new-password"
               className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
             />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Rôle</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
+            >
+              <option value="tenant">Locataire</option>
+              <option value="owner">Propriétaire</option>
+            </select>
           </div>
 
           {error ? (
