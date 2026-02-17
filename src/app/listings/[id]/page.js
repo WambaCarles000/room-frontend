@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { use } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import Link from "next/link";
+import FavoriteButton from "@/components/FavoriteButton";
+import ShareButton from "@/components/ShareButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -186,26 +188,10 @@ export default function ListingDetailsPage({ params }) {
             </svg>
           </div>
         )}
-        <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-4 right-4 p-3 rounded-full bg-white/90 hover:bg-white shadow-lg transition z-20"
-        >
-          <svg
-            className={`h-6 w-6 ${
-              isFavorite ? "fill-red-500 text-red-500" : "text-zinc-600"
-            }`}
-            fill={isFavorite ? "currentColor" : "none"}
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-            />
-          </svg>
-        </button>
+        <div className="absolute top-4 right-4 flex gap-2 z-20">
+          <FavoriteButton listingId={id} />
+          <ShareButton listingId={id} />
+        </div>
       </div>
 
       {/* Contenu principal */}
@@ -261,6 +247,44 @@ export default function ListingDetailsPage({ params }) {
               </p>
             </section>
 
+            {/* Caractéristiques */}
+            {(listing.square_meters || listing.deposit_months || listing.availability_date) && (
+              <section className="rounded-2xl border border-zinc-200 bg-white p-8">
+                <h2 className="text-2xl font-bold text-zinc-900 mb-6">
+                  Caractéristiques
+                </h2>
+                <div className="grid gap-6 sm:grid-cols-3">
+                  {listing.square_meters && (
+                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
+                      <p className="text-4xl mb-2">📐</p>
+                      <p className="text-sm text-zinc-600 mb-1">Superficie</p>
+                      <p className="text-2xl font-bold text-zinc-900">
+                        {listing.square_meters} m²
+                      </p>
+                    </div>
+                  )}
+                  {listing.deposit_months && (
+                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
+                      <p className="text-4xl mb-2">🔐</p>
+                      <p className="text-sm text-zinc-600 mb-1">Caution</p>
+                      <p className="text-2xl font-bold text-zinc-900">
+                        {listing.deposit_months} mois
+                      </p>
+                    </div>
+                  )}
+                  {listing.availability_date && (
+                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
+                      <p className="text-4xl mb-2">📅</p>
+                      <p className="text-sm text-zinc-600 mb-1">Disponibilité</p>
+                      <p className="text-2xl font-bold text-zinc-900">
+                        {new Date(listing.availability_date).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* Status */}
             <section className="rounded-2xl border border-zinc-200 bg-white p-8">
               <h2 className="text-2xl font-bold text-zinc-900 mb-6">Statut</h2>
@@ -289,6 +313,15 @@ export default function ListingDetailsPage({ params }) {
                     <div>
                       <p className="font-semibold text-zinc-700">Vendu</p>
                       <p className="text-sm text-zinc-600">Non disponible</p>
+                    </div>
+                  </>
+                )}
+                {listing.status === "taken" && (
+                  <>
+                    <div className="h-4 w-4 rounded-full bg-orange-500"></div>
+                    <div>
+                      <p className="font-semibold text-orange-700">Réservé</p>
+                      <p className="text-sm text-orange-600">Actuellement réservé</p>
                     </div>
                   </>
                 )}

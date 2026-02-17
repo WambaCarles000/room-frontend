@@ -58,6 +58,12 @@ export default function Header() {
               Logements
             </Link>
             <Link
+              href="/favorites"
+              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
+            >
+              Favoris
+            </Link>
+            <Link
               href="/dashboard"
               className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
             >

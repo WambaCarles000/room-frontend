@@ -14,6 +14,9 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     city: "",
     district: "",
     type: "studio",
+    square_meters: "",
+    deposit_months: "",
+    availability_date: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,6 +45,9 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         body: JSON.stringify({
           ...formData,
           price: parseFloat(formData.price),
+          square_meters: formData.square_meters ? parseFloat(formData.square_meters) : null,
+          deposit_months: formData.deposit_months ? parseInt(formData.deposit_months) : null,
+          availability_date: formData.availability_date || null,
         }),
       });
 
@@ -59,6 +65,9 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         city: "",
         district: "",
         type: "studio",
+        square_meters: "",
+        deposit_months: "",
+        availability_date: "",
       });
       onSuccess?.();
     } catch (err) {
@@ -188,6 +197,55 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           placeholder="Akwa"
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-700">
+            Superficie (m²)
+          </label>
+          <input
+            type="number"
+            value={formData.square_meters}
+            onChange={(e) =>
+              setFormData({ ...formData, square_meters: e.target.value })
+            }
+            min="0"
+            step="0.1"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            placeholder="50"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-700">
+            Caution (mois)
+          </label>
+          <input
+            type="number"
+            value={formData.deposit_months}
+            onChange={(e) =>
+              setFormData({ ...formData, deposit_months: e.target.value })
+            }
+            min="0"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            placeholder="2"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-zinc-700">
+            Date de disponibilité
+          </label>
+          <input
+            type="date"
+            value={formData.availability_date}
+            onChange={(e) =>
+              setFormData({ ...formData, availability_date: e.target.value })
+            }
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+          />
+        </div>
       </div>
 
       {error && (
