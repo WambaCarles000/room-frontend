@@ -39,6 +39,12 @@ export function useAutoSyncProfile() {
           last_name: user_metadata?.last_name || '',
           role: user_metadata?.role || 'tenant',
         };
+        
+        // Add phone only if available
+        if (user_metadata?.phone) {
+          profileData.phone = user_metadata.phone;
+        }
+        
         console.log('Auto-syncing profile data from user_metadata:', profileData);
 
         // Appeler /users/sync

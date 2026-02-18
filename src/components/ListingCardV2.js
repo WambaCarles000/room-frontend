@@ -26,15 +26,15 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
       },
       sold: {
         label: "Vendu",
-        className: "bg-zinc-100 text-zinc-800",
+        className: "bg-red-100 text-red-800 font-bold",
       },
       rented: {
         label: "Loué",
-        className: "bg-blue-100 text-blue-800",
+        className: "bg-orange-100 text-orange-800 font-bold",
       },
       taken: {
         label: "Réservé",
-        className: "bg-orange-100 text-orange-800",
+        className: "bg-orange-100 text-orange-800 font-bold",
       },
     };
     return badges[status] || badges.available;

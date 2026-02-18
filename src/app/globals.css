@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --color-primary: #1e3a8a;
+  --color-secondary: #000000;
+  --color-accent: #22c55e;
 }
 
 @theme inline {

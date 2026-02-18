@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/browser";
 import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import ShareButton from "@/components/ShareButton";
+import ReportModal from "@/components/ReportModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -19,11 +20,18 @@ export default function ListingDetailsPage({ params }) {
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [token, setToken] = useState(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+    });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {
+        setToken(session.access_token);
+      }
     });
     fetchListing();
   }, [id]);
@@ -442,6 +450,17 @@ export default function ListingDetailsPage({ params }) {
                     </svg>
                     ✉️ Email
                   </a>
+                  {user?.email !== listing.owner?.email && (
+                    <button
+                      onClick={() => setShowReportModal(true)}
+                      className="flex items-center justify-center gap-2 w-full rounded-lg border border-red-200 px-4 py-3 font-medium text-red-600 hover:bg-red-50 transition"
+                    >
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82 1.573l-7 10A1 1 0 08 15H3a3 3 0 01-3-3V6a1 1 0 011-1h.01a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                      🚩 Signaler
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -501,6 +520,18 @@ export default function ListingDetailsPage({ params }) {
           </Link>
         </div>
       </div>
+
+      {/* Modal de signalement */}
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetUser={listing?.owner}
+        targetListing={listing}
+        token={token}
+        onSuccess={() => {
+          setShowReportModal(false);
+        }}
+      />
     </div>
   );
 }
