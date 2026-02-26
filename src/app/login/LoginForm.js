@@ -6,36 +6,51 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 
 function LoginForm() {
+
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const nextPath = useMemo(() => searchParams.get("next") || "/dashboard", [searchParams]);
+  
+  // import api lazily to avoid client/server mismatch
+  const api = require("@/lib/api").default;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  async function onSubmit(e) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (signInError) throw signInError;
-      router.replace(nextPath);
-      router.refresh();
-    } catch (err) {
-      setError(err?.message ?? "Impossible de se connecter.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
+async function onSubmit(e) {
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
+  try {
+    const supabase = createClient();
+    const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) throw signInError;
+
+    // récupère le profil via l'API centralisée (gère déjà les 401 / suspension)
+    // const userProfile = await api.get("/users/me", { auth: true });
+
+    // // en cas où le backend renvoie un profil inactif
+    // if (userProfile?.is_active === false) {
+    //   router.replace("/account/suspended");
+    //   return;
+    // }
+
+    router.replace(nextPath);
+    router.refresh();
+  } catch (err) {
+    // redirection for suspended is already handled by api
+    setError(err?.message ?? "Impossible de se connecter.");
+  } finally {
+    setLoading(false);
+  }
+}
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">
       <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-16">

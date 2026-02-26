@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/browser';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import api from '@/lib/api';
 
 /**
  * Hook qui synce automatiquement le profil utilisateur après email confirmation.
@@ -48,22 +47,8 @@ export function useAutoSyncProfile() {
         console.log('Auto-syncing profile data from user_metadata:', profileData);
 
         // Appeler /users/sync
-        const syncRes = await fetch(`${API_URL}/users/sync`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify(profileData),
-        });
-
-        const syncData = await syncRes.json();
+        const syncData = await api.post('/users/sync', profileData, { auth: true });
         console.log('Auto-sync response:', syncData);
-
-        if (!syncRes.ok) {
-          console.error('Auto-sync failed with status:', syncRes.status, syncData);
-          return;
-        }
 
         console.log('Profile synced successfully from user_metadata');
 

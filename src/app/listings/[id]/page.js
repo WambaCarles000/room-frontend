@@ -437,7 +437,7 @@ export default function ListingDetailsPage({ params }) {
                       <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773c.418 1.738 1.48 3.578 2.922 5.02a9.716 9.716 0 005.02 2.922l.773-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a2 2 0 01-2 2h-1C9.716 19 3 12.284 3 4V3z" />
                       </svg>
-                      📞 Appeler
+                      Appeler
                     </a>
                   )}
                   <a
@@ -448,7 +448,7 @@ export default function ListingDetailsPage({ params }) {
                       <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                       <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                     </svg>
-                    ✉️ Email
+                    Email
                   </a>
                   {user?.email !== listing.owner?.email && (
                     <button
@@ -458,7 +458,7 @@ export default function ListingDetailsPage({ params }) {
                       <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82 1.573l-7 10A1 1 0 08 15H3a3 3 0 01-3-3V6a1 1 0 011-1h.01a1 1 0 01-1-1z" clipRule="evenodd" />
                       </svg>
-                      🚩 Signaler
+                       Signaler
                     </button>
                   )}
                 </div>

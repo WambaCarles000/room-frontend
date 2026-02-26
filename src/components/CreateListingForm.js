@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/browser";
+import api from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -27,36 +27,17 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        throw new Error("Vous devez être connecté");
-      }
-
-      const res = await fetch(`${API_URL}/listings`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
+      const newListing = await api.post(
+        "/listings",
+        {
           ...formData,
           price: parseFloat(formData.price),
           square_meters: formData.square_meters ? parseFloat(formData.square_meters) : null,
           deposit_months: formData.deposit_months ? parseInt(formData.deposit_months) : null,
           availability_date: formData.availability_date || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.message || "Erreur lors de la création");
-      }
-
-      const newListing = await res.json();
+        },
+        { auth: true }
+      );
       setFormData({
         title: "",
         description: "",

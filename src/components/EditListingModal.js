@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 export default function EditListingModal({ listing, isOpen, onClose, onSuccess, token }) {
   const [formData, setFormData] = useState({
@@ -46,13 +45,9 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess, 
       if (!formData.city?.trim()) throw new Error("La ville est obligatoire");
       if (!formData.district?.trim()) throw new Error("Le quartier est obligatoire");
 
-      const res = await fetch(`${API_URL}/listings/${listing.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      await api.patch(
+        `/listings/${listing.id}`,
+        {
           title: formData.title.trim(),
           description: formData.description.trim(),
           price: parseFloat(formData.price),
@@ -63,13 +58,9 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess, 
           deposit_months: formData.deposit_months ? parseInt(formData.deposit_months) : null,
           status: formData.status,
           availability_date: formData.availability_date || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Erreur lors de la mise à jour");
-      }
+        },
+        { auth: true }
+      );
 
       setSuccess(true);
       setTimeout(() => {

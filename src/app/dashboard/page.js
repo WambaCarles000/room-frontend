@@ -7,8 +7,7 @@ import ProfileCard from "@/components/dashboard/ProfileCard";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import StatCard from "@/components/dashboard/StatCard";
 import UserListingsCard from "@/components/dashboard/UserListingsCard";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -51,18 +50,8 @@ export default function DashboardPage() {
         }
 
         // Fetch user listings
-        if (session?.access_token) {
-          const res = await fetch(`${API_URL}/listings/user`, {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
-          
-          if (res.ok) {
-            const data = await res.json();
-            setListings(data || []);
-          }
-        }
+        const data = await api.get('/listings/user', { auth: true });
+        setListings(data || []);
       } catch (err) {
         console.error("Dashboard error:", err);
         setError("Erreur lors du chargement du dashboard");

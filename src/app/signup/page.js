@@ -197,9 +197,9 @@ export default function SignupPage() {
                 className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
                 placeholder="+237 6XX XXX XXX"
               />
-              <p className="text-xs text-blue-700">
+              {/* <p className="text-xs text-blue-700">
                 <strong>Note:</strong> Les locataires intéressés par vos logements pourront voir votre numéro.
-              </p>
+              </p> */}
             </div>
           )}
 

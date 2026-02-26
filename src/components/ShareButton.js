@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 const SHARE_PLATFORMS = [
   {
@@ -45,20 +44,11 @@ export default function ShareButton({ listingId }) {
     setLoading(true);
     try {
       // Enregistrer le partage
-      await fetch(`${API_URL}/listings/${listingId}/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ platform }),
-      });
+      await api.post(`/listings/${listingId}/share`, { platform });
 
       // Récupérer l'URL de partage
-      const res = await fetch(
-        `${API_URL}/listings/${listingId}/share-url/${platform}`
-      );
-      if (res.ok) {
-        const data = await res.json();
+      const data = await api.get(`/listings/${listingId}/share-url/${platform}`);
+      if (data?.shareUrl) {
         window.open(data.shareUrl, "_blank", "width=600,height=400");
       }
     } catch (err) {

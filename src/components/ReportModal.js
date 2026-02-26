@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 export default function ReportModal({ isOpen, onClose, targetUser, targetListing, token }) {
   const [reason, setReason] = useState("");
@@ -33,19 +32,7 @@ export default function ReportModal({ isOpen, onClose, targetUser, targetListing
         payload.listing_id = targetListing.id;
       }
 
-      const res = await fetch(`${API_URL}/reports`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Erreur lors du signalement");
-      }
+      await api.post(`/reports`, payload, { auth: true });
 
       setSuccess(true);
       setTimeout(() => {

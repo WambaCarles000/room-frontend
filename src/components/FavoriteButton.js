@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/browser";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 export default function FavoriteButton({ listingId }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -29,18 +28,11 @@ export default function FavoriteButton({ listingId }) {
 
       if (!session) return;
 
-      const res = await fetch(
-        `${API_URL}/favorites/check/${listingId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
+      try {
+        const data = await api.get(`/favorites/check/${listingId}`, { auth: true });
         setIsFavorite(data.isFavorite);
+      } catch (e) {
+        // ignore
       }
     } catch (err) {
       console.error("Erreur lors de la vérification du favori:", err);
@@ -60,19 +52,12 @@ export default function FavoriteButton({ listingId }) {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const method = isFavorite ? "DELETE" : "POST";
-      const res = await fetch(
-        `${API_URL}/favorites/${listingId}`,
-        {
-          method,
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        }
-      );
-
-      if (res.ok) {
-        setIsFavorite(!isFavorite);
+      if (isFavorite) {
+        await api.del(`/favorites/${listingId}`, null, { auth: true });
+        setIsFavorite(false);
+      } else {
+        await api.post(`/favorites/${listingId}`, null, { auth: true });
+        setIsFavorite(true);
       }
     } catch (err) {
       console.error("Erreur lors de la modification du favori:", err);

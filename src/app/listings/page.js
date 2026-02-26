@@ -6,8 +6,8 @@ import CreateListingForm from "@/components/CreateListingForm";
 import ListingCardV2 from "@/components/ListingCardV2";
 import ListingFilters from "@/components/ListingFilters";
 import EditListingModal from "@/components/EditListingModal";
+import api from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function ListingsPage() {
   const [allListings, setAllListings] = useState([]);
@@ -77,10 +77,8 @@ export default function ListingsPage() {
   async function fetchListings() {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/listings`);
-      if (!res.ok) throw new Error("Erreur lors du chargement");
-      const data = await res.json();
-      setAllListings(data);
+      const data = await api.get("/listings");
+      setAllListings(data || []);
     } catch (err) {
       setError(err.message);
     } finally {

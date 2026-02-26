@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import Link from "next/link";
 import ListingCard from "@/components/ListingCard";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+import api from "@/lib/api";
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
@@ -28,27 +27,7 @@ export default function FavoritesPage() {
 
   async function fetchFavorites() {
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        setError("Session expirée");
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/favorites`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Erreur lors du chargement des favoris");
-      }
-
-      const data = await res.json();
+      const data = await api.get('/favorites', { auth: true });
       setFavorites(data);
     } catch (err) {
       setError(err.message);
