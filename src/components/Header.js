@@ -40,7 +40,7 @@ export default function Header() {
     "?";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
+    <header className="fixed top-0 inset-x-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo et titre */}
@@ -126,7 +126,7 @@ export default function Header() {
                       </Link>
 
                       <Link
-                        href="/listings"
+                        href="/my-listings"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={() => setIsDropdownOpen(false)}
                       >
@@ -144,7 +144,7 @@ export default function Header() {
                               d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"
                             />
                           </svg>
-                          Mesures mes annonces
+                          Mes logements
                         </span>
                       </Link>
 

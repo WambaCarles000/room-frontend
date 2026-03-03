@@ -72,7 +72,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
               setFormData({ ...formData, title: e.target.value })
             }
             required
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="Ex: Studio moderne centre-ville"
           />
         </div>
@@ -87,7 +87,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
               setFormData({ ...formData, type: e.target.value })
             }
             required
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           >
             <option value="studio">Studio</option>
             <option value="chambre">Chambre</option>
@@ -107,7 +107,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           }
           required
           rows={3}
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           placeholder="Décrivez le logement..."
         />
       </div>
@@ -125,7 +125,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             }
             required
             min="0"
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="150000"
           />
         </div>
@@ -139,7 +139,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             onChange={(e) =>
               setFormData({ ...formData, currency: e.target.value })
             }
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           >
             <option value="XAF">XAF</option>
             <option value="EUR">EUR</option>
@@ -158,7 +158,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
               setFormData({ ...formData, city: e.target.value })
             }
             required
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="Douala"
           />
         </div>
@@ -175,7 +175,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             setFormData({ ...formData, district: e.target.value })
           }
           required
-          className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+          className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           placeholder="Akwa"
         />
       </div>
@@ -193,7 +193,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             }
             min="0"
             step="0.1"
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="50"
           />
         </div>
@@ -209,7 +209,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
               setFormData({ ...formData, deposit_months: e.target.value })
             }
             min="0"
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="2"
           />
         </div>
@@ -224,7 +224,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             onChange={(e) =>
               setFormData({ ...formData, availability_date: e.target.value })
             }
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
+            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           />
         </div>
       </div>

@@ -25,9 +25,11 @@ export default function UserListingsCard({ listings = [], isLoading = false }) {
     );
   }
 
+  const visibleListings = listings.slice(0, 5);
+
   return (
     <div className="space-y-3">
-      {listings.map((listing) => (
+      {visibleListings.map((listing) => (
         <div
           key={listing.id}
           className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-4"
@@ -54,6 +56,17 @@ export default function UserListingsCard({ listings = [], isLoading = false }) {
           </div>
         </div>
       ))}
+
+      {listings.length > 5 && (
+        <div className="pt-2 text-right">
+          <Link
+            href="/my-listings"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+          >
+            Voir tous mes logements →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
-import ProfileCard from "@/components/dashboard/ProfileCard";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import StatCard from "@/components/dashboard/StatCard";
 import UserListingsCard from "@/components/dashboard/UserListingsCard";
@@ -14,7 +13,6 @@ export default function DashboardPage() {
   const supabase = createClient();
   
   const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,11 +42,6 @@ export default function DashboardPage() {
 
         setUser(currentUser);
 
-        // Get profile from user metadata
-        if (currentUser.user_metadata) {
-          setProfile(currentUser.user_metadata);
-        }
-
         // Fetch user listings
         const data = await api.get('/listings/user', { auth: true });
         setListings(data || []);
@@ -62,11 +55,6 @@ export default function DashboardPage() {
 
     loadDashboard();
   }, []);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
 
   if (loading) {
     return (
@@ -85,7 +73,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-zinc-900">Mon Dashboard</h1>
-          <p className="mt-2 text-zinc-600">Gérez vos logements et votre profil</p>
+          {/* <p className="mt-2 text-zinc-600">Gérez vos logements et votre profil</p> */}
         </div>
 
         {error && (
@@ -93,11 +81,6 @@ export default function DashboardPage() {
             {error}
           </div>
         )}
-
-        {/* Profile Section */}
-        <div className="mb-8">
-          <ProfileCard user={profile || user} onLogout={handleLogout} />
-        </div>
 
         {/* Stats Section */}
         {listings.length > 0 && (
@@ -125,7 +108,7 @@ export default function DashboardPage() {
 
         {/* Listings Section */}
         {listings.length > 0 && (
-          <DashboardCard title="Mes logements">
+          <DashboardCard title="Mes logements (aperçu)">
             <UserListingsCard listings={listings} isLoading={loading} />
           </DashboardCard>
         )}
