@@ -70,8 +70,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-        <div className="mx-auto max-w-4xl text-center">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-zinc-900 animate-spin mx-auto mb-4"></div>
           <p className="text-zinc-600">Chargement du dashboard...</p>
         </div>
       </div>
@@ -99,7 +100,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Section */}
-        {profile?.role === "owner" && (
+        {listings.length > 0 && (
           <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatCard
               label="Logements publiés"
@@ -123,33 +124,31 @@ export default function DashboardPage() {
         )}
 
         {/* Listings Section */}
-        {profile?.role === "owner" && (
+        {listings.length > 0 && (
           <DashboardCard title="Mes logements">
             <UserListingsCard listings={listings} isLoading={loading} />
           </DashboardCard>
         )}
 
         {/* Quick Actions */}
-        {profile?.role === "owner" && (
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <DashboardCard className="text-center">
-              <a
-                href="/listings"
-                className="block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
-              >
-                Créer un nouveau logement
-              </a>
-            </DashboardCard>
-            <DashboardCard className="text-center">
-              <a
-                href="/favorites"
-                className="block rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
-              >
-                Mes sauvegardes
-              </a>
-            </DashboardCard>
-          </div>
-        )}
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <DashboardCard className="text-center">
+            <a
+              href="/listings"
+              className="block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            >
+              Créer un nouveau logement
+            </a>
+          </DashboardCard>
+          <DashboardCard className="text-center">
+            <a
+              href="/favorites"
+              className="block rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
+            >
+              Mes sauvegardes
+            </a>
+          </DashboardCard>
+        </div>
       </main>
     </div>
   );

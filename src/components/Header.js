@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
+import api from "@/lib/api";
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -33,7 +34,10 @@ export default function Header() {
     setIsDropdownOpen(false);
   }
 
-  const userInitial = user?.email?.charAt(0).toUpperCase() || "?";
+  const userInitial =
+    user?.user_metadata?.first_name?.charAt(0).toUpperCase() ||
+    user?.email?.charAt(0).toUpperCase() ||
+    "?";
 
   return (
     <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
@@ -80,7 +84,7 @@ export default function Header() {
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 text-white font-semibold hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
-                  title={user.email}
+                  title={user.user_metadata?.first_name || "Mon compte"}
                 >
                   {userInitial}
                 </button>
@@ -90,12 +94,10 @@ export default function Header() {
                   <div className="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white shadow-lg">
                     {/* User Info */}
                     <div className="border-b border-zinc-200 p-4">
-                      <p className="text-sm font-bold  text-zinc-900 mb-1">
+                      <p className="text-base font-semibold text-zinc-900 mb-1">
                         {user.user_metadata?.first_name || "Mon Profil"}
                       </p>
-                      <p className="text-xs text-zinc-600 truncate">
-                        {user.email}
-                      </p>
+                      {/* Email masqué pour plus de confidentialité */}
                     </div>
 
                     {/* Menu Items */}
@@ -169,12 +171,10 @@ export default function Header() {
                         </span>
                       </Link>
 
-                      <button
-                        onClick={() => {
-                          setIsDropdownOpen(false);
-                          // Navigate to settings
-                        }}
-                        className="w-full text-left px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                      <Link
+                        href="/account/settings"
+                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        onClick={() => setIsDropdownOpen(false)}
                       >
                         <span className="flex items-center gap-2">
                           <svg
@@ -198,7 +198,7 @@ export default function Header() {
                           </svg>
                           Paramètres
                         </span>
-                      </button>
+                      </Link>
                     </div>
 
                     {/* Logout */}
@@ -246,7 +246,6 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Click outside to close dropdown */}
       {isDropdownOpen && (
         <div
           className="fixed inset-0 z-30"

@@ -1,0 +1,13 @@
+"use client";
+
+import { useEffect } from "react";
+import Modal from "react-modal";
+
+export default function ModalInit() {
+  useEffect(() => {
+    // set application element for accessibility
+    Modal.setAppElement("#__next");
+  }, []);
+
+  return null;
+}

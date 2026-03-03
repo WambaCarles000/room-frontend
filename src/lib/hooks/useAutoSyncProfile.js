@@ -36,8 +36,11 @@ export function useAutoSyncProfile() {
         const profileData = {
           first_name: user_metadata?.first_name || '',
           last_name: user_metadata?.last_name || '',
-          role: user_metadata?.role || 'tenant',
         };
+        // only send role if provided and not admin (admins shouldn't be synced by this hook)
+        if (user_metadata?.role && user_metadata.role !== 'admin') {
+          profileData.role = user_metadata.role;
+        }
         
         // Add phone only if available
         if (user_metadata?.phone) {
