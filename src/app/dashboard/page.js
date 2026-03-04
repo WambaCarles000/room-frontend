@@ -128,7 +128,7 @@ export default function DashboardPage() {
               href="/favorites"
               className="block rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
             >
-              Mes sauvegardes
+              Mes favoris
             </a>
           </DashboardCard>
         </div>
