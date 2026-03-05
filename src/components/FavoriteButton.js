@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import Popups from "@/components/popups";
 
 export default function FavoriteButton({ listingId }) {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -38,10 +39,11 @@ export default function FavoriteButton({ listingId }) {
       console.error("Erreur lors de la vérification du favori:", err);
     }
   }
+  
 
   async function toggleFavorite() {
     if (!user) {
-      alert("Veuillez vous connecter pour ajouter aux favoris");
+      Popups("Veuillez vous connecter pour ajouter aux favoris", "error");
       return;
     }
 

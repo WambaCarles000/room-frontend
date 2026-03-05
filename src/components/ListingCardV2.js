@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { LuHouse } from "react-icons/lu";
+import { IoKeyOutline } from "react-icons/io5";
+import { IoCheckmarkCircle } from "react-icons/io5";
 
 export default function ListingCard({ listing, isOwner, onEditClick }) {
   const formatPrice = (price, currency = "XAF") => {
@@ -102,13 +105,13 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
         <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
           {listing.square_meters && (
             <div className="flex items-center gap-1 text-zinc-600 bg-zinc-50 rounded p-2">
-              <span>📐</span>
+              <span><LuHouse /></span>
               <span className="font-medium">{listing.square_meters} m²</span>
             </div>
           )}
           {listing.deposit_months && (
             <div className="flex items-center gap-1 text-zinc-600 bg-zinc-50 rounded p-2">
-              <span>🔐</span>
+              <span><IoKeyOutline /></span>
               <span className="font-medium">{listing.deposit_months} mois</span>
             </div>
           )}

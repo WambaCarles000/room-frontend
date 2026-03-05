@@ -7,9 +7,14 @@ import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import ShareButton from "@/components/ShareButton";
 import ReportModal from "@/components/ReportModal";
+import { LuHouse } from "react-icons/lu";
+import { IoKeyOutline } from "react-icons/io5";
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { IoCalendar } from "react-icons/io5";
+import { CiShare2 } from "react-icons/ci";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
 export default function ListingDetailsPage({ params }) {
   const { id } = use(params);
   const [listing, setListing] = useState(null);
@@ -170,9 +175,8 @@ export default function ListingDetailsPage({ params }) {
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`h-2 rounded-full transition ${
-                        idx === currentImageIndex ? "bg-white w-8" : "bg-white/50 w-2"
-                      }`}
+                      className={`h-2 rounded-full transition ${idx === currentImageIndex ? "bg-white w-8" : "bg-white/50 w-2"
+                        }`}
                     />
                   ))}
                 </div>
@@ -198,7 +202,7 @@ export default function ListingDetailsPage({ params }) {
         )}
         <div className="absolute top-4 right-4 flex gap-2 z-20">
           <FavoriteButton listingId={id} />
-          <ShareButton listingId={id} />
+          {/* <ShareButton listingId={id} /> */}
         </div>
       </div>
 
@@ -212,8 +216,8 @@ export default function ListingDetailsPage({ params }) {
                 {listing.type === "studio"
                   ? "🏠 Studio"
                   : listing.type === "chambre"
-                  ? "🛏️ Chambre"
-                  : "🏢 Appartement"}
+                    ? "🛏️ Chambre"
+                    : "🏢 Appartement"}
               </div>
               <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-3">
                 {listing.title}
@@ -264,27 +268,27 @@ export default function ListingDetailsPage({ params }) {
                 <div className="grid gap-6 sm:grid-cols-3">
                   {listing.square_meters && (
                     <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2">📐</p>
+                      <p className="text-4xl mb-2 inline-block"><LuHouse className=" text-green-500" /></p>
                       <p className="text-sm text-zinc-600 mb-1">Superficie</p>
-                      <p className="text-2xl font-bold text-zinc-900">
+                      <p className="text-xl font-bold text-zinc-900">
                         {listing.square_meters} m²
                       </p>
                     </div>
                   )}
                   {listing.deposit_months && (
                     <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2">🔐</p>
+                      <p className="text-4xl mb-2 inline-block"><IoKeyOutline className=" text-green-500" /></p>
                       <p className="text-sm text-zinc-600 mb-1">Caution</p>
-                      <p className="text-2xl font-bold text-zinc-900">
+                      <p className="text-xl font-bold text-zinc-900">
                         {listing.deposit_months} mois
                       </p>
                     </div>
                   )}
                   {listing.availability_date && (
                     <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2">📅</p>
+                      <p className="text-4xl mb-2 inline-block"><IoCalendar className=" text-green-500" /></p>
                       <p className="text-sm text-zinc-600 mb-1">Disponibilité</p>
-                      <p className="text-2xl font-bold text-zinc-900">
+                      <p className="text-xl font-bold text-zinc-900">
                         {new Date(listing.availability_date).toLocaleDateString("fr-FR")}
                       </p>
                     </div>
@@ -347,9 +351,8 @@ export default function ListingDetailsPage({ params }) {
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`rounded-xl overflow-hidden h-40 transition transform hover:scale-105 ${
-                        idx === currentImageIndex ? "ring-2 ring-zinc-900" : ""
-                      }`}
+                      className={`rounded-xl overflow-hidden h-40 transition transform hover:scale-105 ${idx === currentImageIndex ? "ring-2 ring-zinc-900" : ""
+                        }`}
                     >
                       <img
                         src={image.imageUrl}
@@ -458,7 +461,7 @@ export default function ListingDetailsPage({ params }) {
                       <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82 1.573l-7 10A1 1 0 08 15H3a3 3 0 01-3-3V6a1 1 0 011-1h.01a1 1 0 01-1-1z" clipRule="evenodd" />
                       </svg>
-                       Signaler
+                      Signaler
                     </button>
                   )}
                 </div>
@@ -467,26 +470,21 @@ export default function ListingDetailsPage({ params }) {
 
             {/* Partager */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-8">
-              <h3 className="text-xl font-bold text-zinc-900 mb-4">📤 Partager</h3>
+         
               <div className="flex gap-2 flex-col">
-                <button
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: listing.title,
-                        text: listing.description,
-                        url: window.location.href,
-                      });
-                    }
-                  }}
-                  className="w-full rounded-lg bg-zinc-100 px-4 py-2 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition"
-                >
-                  Partager
+             
+                <button className="w-full rounded-lg bg-zinc-100 px-2 py-0 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition">               
+                  <ShareButton
+                   listingId={id} 
+                   listingTitle={listing.title}
+                   listingUrl={`${SITE_URL}/listings/${id}`}
+                  />
                 </button>
+
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("Lien copié ! 📋");
+                    alert("Lien copié avec succès");
                   }}
                   className="w-full rounded-lg bg-zinc-100 px-4 py-2 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition"
                 >

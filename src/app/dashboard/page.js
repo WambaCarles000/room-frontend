@@ -7,6 +7,9 @@ import DashboardCard from "@/components/dashboard/DashboardCard";
 import StatCard from "@/components/dashboard/StatCard";
 import UserListingsCard from "@/components/dashboard/UserListingsCard";
 import api from "@/lib/api";
+import { LuHouse } from "react-icons/lu";
+import { IoKeyOutline } from "react-icons/io5";
+import { IoCheckmarkCircle } from "react-icons/io5";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -88,19 +91,19 @@ export default function DashboardPage() {
             <StatCard
               label="Logements publiés"
               value={listings.length}
-              icon="🏠"
+              icon={<LuHouse />}
               variant="default"
             />
             <StatCard
               label="Disponibles"
               value={listings.filter((l) => l.status === "available").length}
-              icon="✓"
+              icon={<IoCheckmarkCircle />}
               variant="success"
             />
             <StatCard
               label="Loués"
               value={listings.filter((l) => l.status === "rented").length}
-              icon="🔑"
+              icon={<IoKeyOutline />}
               variant="warning"
             />
           </div>
