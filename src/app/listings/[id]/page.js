@@ -467,9 +467,10 @@ export default function ListingDetailsPage({ params }) {
                 </div>
 
                 {/* Activité du bailleur */}
+            
                 <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-sm space-y-3">
-                  <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase">
-                    Activité du bailleur
+                  <p className="text-xs font-bold tracking-wide  text-center text-zinc-900 ">
+                    Activité
                   </p>
 
                   {(() => {
@@ -482,62 +483,67 @@ export default function ListingDetailsPage({ params }) {
 
                     return (
                       <>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
-                            <p className="text-base font-semibold text-zinc-900">
+                        {/* Grid responsive : 2 cols sur mobile, 4 sur lg+ */}
+                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-2 text-center">
+                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                            <p className="text-lg font-bold text-zinc-900">
                               {available}
                             </p>
-                            <p className="text-[11px] text-zinc-600 leading-tight">
-                              Logements disponibles
+                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                              Disponibles
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
-                            <p className="text-base font-semibold text-zinc-900">
+                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                            <p className="text-lg font-bold text-zinc-900">
                               {rented}
                             </p>
-                            <p className="text-[11px] text-zinc-600 leading-tight">
-                              loués
+                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                              Loués
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
-                            <p className="text-base font-semibold text-zinc-900">
+                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                            <p className="text-lg font-bold text-zinc-900">
                               {taken}
                             </p>
-                            <p className="text-[11px] text-zinc-600 leading-tight">
-                              réservés
+                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                              Réservés
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
-                            <p className="text-base font-semibold text-zinc-900">
+                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                            <p className="text-lg font-bold text-zinc-900">
                               {sold}
                             </p>
-                            <p className="text-[11px] text-zinc-600 leading-tight">
-                              vendus
+                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                              Vendus
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-zinc-600">
-                          <span>
-                            {total} logement{total !== 1 ? "s" : ""} au total
-                          </span>
-                          <span className={reports > 0 ? "text-red-600 font-medium" : ""}>
-                            {reports} signalement{reports !== 1 ? "s" : ""} reçu
-                            {reports !== 1 ? "s" : ""}
-                          </span>
+                        {/* Footer avec infos complémentaires */}
+                        <div className="space-y-2 pt-2 border-t border-zinc-200">
+                          <div className="flex items-center justify-between text-xs text-zinc-600">
+                            <span className="font-medium">
+                              {total} logement{total !== 1 ? "s" : ""} au total
+                            </span>
+                            <span className={`font-medium ${reports > 0 ? "text-red-600" : ""}`}>
+                              {reports} signalement{reports !== 1 ? "s" : ""}
+                            </span>
+                          </div>
                         </div>
                       </>
                     );
                   })()}
                 </div>
+
+
               </div>
             </div>
 
             {/* Partager */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-8">
-         
+
               <div className="flex gap-2 flex-col">
-             
+
                 <ShareButton
                   listingId={id}
                   listingTitle={listing.title}
