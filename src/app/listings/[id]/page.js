@@ -465,6 +465,71 @@ export default function ListingDetailsPage({ params }) {
                     </button>
                   )}
                 </div>
+
+                {/* Activité du bailleur */}
+                <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-sm space-y-3">
+                  <p className="text-xs font-medium tracking-wide text-zinc-500 uppercase">
+                    Activité du bailleur
+                  </p>
+
+                  {(() => {
+                    const total = listing.owner?.total_listings ?? 0;
+                    const rented = listing.owner?.rented_listings ?? 0;
+                    const taken = listing.owner?.taken_listings ?? 0;
+                    const sold = listing.owner?.sold_listings ?? 0;
+                    const reports = listing.owner?.reports_count ?? 0;
+                    const available = Math.max(total - rented - taken - sold, 0);
+
+                    return (
+                      <>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
+                            <p className="text-base font-semibold text-zinc-900">
+                              {available}
+                            </p>
+                            <p className="text-[11px] text-zinc-600 leading-tight">
+                              Logements disponibles
+                            </p>
+                          </div>
+                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
+                            <p className="text-base font-semibold text-zinc-900">
+                              {rented}
+                            </p>
+                            <p className="text-[11px] text-zinc-600 leading-tight">
+                              loués
+                            </p>
+                          </div>
+                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
+                            <p className="text-base font-semibold text-zinc-900">
+                              {taken}
+                            </p>
+                            <p className="text-[11px] text-zinc-600 leading-tight">
+                              réservés
+                            </p>
+                          </div>
+                          <div className="rounded-lg bg-white border border-zinc-200 px-2 py-2">
+                            <p className="text-base font-semibold text-zinc-900">
+                              {sold}
+                            </p>
+                            <p className="text-[11px] text-zinc-600 leading-tight">
+                              vendus
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-zinc-600">
+                          <span>
+                            {total} logement{total !== 1 ? "s" : ""} au total
+                          </span>
+                          <span className={reports > 0 ? "text-red-600 font-medium" : ""}>
+                            {reports} signalement{reports !== 1 ? "s" : ""} reçu
+                            {reports !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
 
@@ -473,13 +538,11 @@ export default function ListingDetailsPage({ params }) {
          
               <div className="flex gap-2 flex-col">
              
-                <button className="w-full rounded-lg bg-zinc-100 px-2 py-0 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition">               
-                  <ShareButton
-                   listingId={id} 
-                   listingTitle={listing.title}
-                   listingUrl={`${SITE_URL}/listings/${id}`}
-                  />
-                </button>
+                <ShareButton
+                  listingId={id}
+                  listingTitle={listing.title}
+                  listingUrl={`${SITE_URL}/listings/${id}`}
+                />
 
                 <button
                   onClick={() => {

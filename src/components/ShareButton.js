@@ -63,7 +63,7 @@ export default function ShareButton({ listingId, listingTitle, listingUrl }) {
       {/* Bouton principal */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex w-full gap-2 px-4 py-2.5 "
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-center font-medium text-zinc-900 transition hover:bg-zinc-200"
       >
      
         Partager
