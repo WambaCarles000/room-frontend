@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import api from "@/lib/api";
+import { createClient } from "@/lib/supabase/browser";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+const MAX_IMAGES = 10;
 
 export default function CreateListingForm({ onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
@@ -18,8 +19,46 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     deposit_months: "",
     availability_date: "",
   });
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleImagesChange = (e) => {
+    const files = Array.from(e.target.files || []);
+    const next = [...images, ...files].slice(0, MAX_IMAGES);
+    setImages(next);
+  };
+
+  async function uploadImagesToSupabase(listingId) {
+    if (!images.length) return [];
+
+    const supabase = createClient();
+    const uploadedUrls = [];
+
+    for (let i = 0; i < images.length; i++) {
+      const file = images[i];
+      const ext = file.name.split(".").pop() || "jpg";
+      const fileName = `${Date.now()}-${i}.${ext}`;
+      const path = `listings/${listingId}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("listings")
+        .upload(path, file, { upsert: false });
+
+      if (uploadError) {
+        console.error("Supabase upload error:", uploadError);
+        // On continue avec les autres images, sans bloquer toute la création
+        continue;
+      }
+
+      const { data } = supabase.storage.from("listings").getPublicUrl(path);
+      if (data?.publicUrl) {
+        uploadedUrls.push(data.publicUrl);
+      }
+    }
+
+    return uploadedUrls;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,6 +77,19 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         },
         { auth: true }
       );
+
+      // Upload des images vers Supabase Storage puis enregistrement des URLs côté backend
+      if (newListing?.id) {
+        const imageUrls = await uploadImagesToSupabase(newListing.id);
+        if (imageUrls.length) {
+          await api.post(
+            `/listings/${newListing.id}/images`,
+            { images: imageUrls },
+            { auth: true }
+          );
+        }
+      }
+
       setFormData({
         title: "",
         description: "",
@@ -50,6 +102,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         deposit_months: "",
         availability_date: "",
       });
+      setImages([]);
       onSuccess?.();
     } catch (err) {
       setError(err.message);
@@ -162,6 +215,26 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             placeholder="Douala"
           />
         </div>
+      </div>
+
+      {/* Images */}
+      <div>
+        <label className="mb-1 block text-sm font-medium text-zinc-700">
+          Photos du logement <span className="text-xs text-zinc-500">(jusqu&apos;à {MAX_IMAGES})</span>
+        </label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImagesChange}
+          className="block w-full text-sm text-zinc-900 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-800"
+        />
+        {images.length > 0 && (
+          <p className="mt-1 text-xs text-zinc-500">
+            {images.length} image{images.length > 1 ? "s" : ""} sélectionnée
+            {images.length > 1 ? "s" : ""}.
+          </p>
+        )}
       </div>
 
       <div>

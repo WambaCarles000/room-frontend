@@ -12,6 +12,7 @@ import { IoKeyOutline } from "react-icons/io5";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { IoCalendar } from "react-icons/io5";
 import { CiShare2 } from "react-icons/ci";
+import Popup from "@/components/popups";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
@@ -553,7 +554,7 @@ export default function ListingDetailsPage({ params }) {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    alert("Lien copié avec succès");
+                    Popup("Lien copié avec succès", "success");
                   }}
                   className="w-full rounded-lg bg-zinc-100 px-4 py-2 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition"
                 >

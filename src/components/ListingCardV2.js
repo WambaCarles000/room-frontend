@@ -50,19 +50,23 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
       {/* Image container */}
       <div className="relative h-48 w-full bg-gradient-to-br from-zinc-100 to-zinc-200 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
-          <svg
-            className="h-12 w-12 text-zinc-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            />
-          </svg>
+          {listing.images.length > 0 ? (
+            <img src={listing.images[3].imageUrl} alt={listing.title} className="w-full h-full object-cover" />
+          ) : (<div className="w-full h-full flex items-center justify-center">
+            <svg
+              className="h-12 w-12 text-zinc-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+          </div>)}
         </div>
 
         {/* Status badge */}
