@@ -4,11 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import { usePathname } from "next/navigation";
+
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isActive = (href) => {
+    if (href === "/" && pathname === "/") return true;
+    if (href === "/listings" && (pathname === "/listings" || pathname.startsWith("/listings/"))) return true;
+    if (href === "/favorites" && pathname === "/favorites") return true;
+    if (href === "/dashboard" && pathname === "/dashboard") return true;
+    return false;
+  };
+  const getLinkClasses = (href) => {
+    const baseClasses = "text-sm font-medium transition";
+    const activeClasses = "text-zinc-900 font-semibold"; // Actif : plus sombre
+    const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
+    return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
+  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -55,23 +72,29 @@ export default function Header() {
 
           {/* Menu principal */}
           <nav className="flex items-center gap-6">
-            <Link
+            {/* <Link
               href="/listings"
               className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
             >
               Logements
+            </Link> */}
+            <Link href="/listings" className={`${getLinkClasses("/listings")} relative`}>
+              Logements
+              {isActive("/listings") && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+              )}
             </Link>
-            <Link
-              href="/favorites"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
-            >
+            <Link href="/favorites" className={`${getLinkClasses("/favorites")} relative`}>
               Favoris
+              {isActive("/favorites") && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+              )}
             </Link>
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
-            >
+            <Link href="/dashboard" className={`${getLinkClasses("/dashboard")} relative`}>
               Dashboard
+              {isActive("/dashboard") && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+              )}
             </Link>
           </nav>
 
