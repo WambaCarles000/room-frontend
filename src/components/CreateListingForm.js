@@ -1,10 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import api from "@/lib/api";
 import { createClient } from "@/lib/supabase/browser";
 
 const MAX_IMAGES = 10;
+
+const listingSchema = z.object({
+  title: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
+  description: z.string().min(10, "La description doit faire au moins 10 caractères"),
+  price: z.coerce.number().positive("Le prix doit être supérieur à 0"),
+  currency: z.enum(["XAF", "EUR", "USD"]),
+  city: z.string().min(1, "La ville est requise"),
+  district: z.string().min(1, "Le quartier est requis"),
+  type: z.enum(["studio", "chambre", "appartement"]),
+  square_meters: z.coerce.number().positive().optional().nullable(),
+  deposit_months: z.coerce.number().int().min(0).optional().nullable(),
+  availability_date: z.string().optional().nullable(),
+});
 
 export default function CreateListingForm({ onSuccess, onCancel }) {
   const [formData, setFormData] = useState({
@@ -22,6 +36,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleImagesChange = (e) => {
     const files = Array.from(e.target.files || []);
@@ -47,7 +62,6 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
 
       if (uploadError) {
         console.error("Supabase upload error:", uploadError);
-        // On continue avec les autres images, sans bloquer toute la création
         continue;
       }
 
@@ -63,22 +77,33 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     setLoading(true);
 
-    try {
-      const newListing = await api.post(
-        "/listings",
-        {
-          ...formData,
-          price: parseFloat(formData.price),
-          square_meters: formData.square_meters ? parseFloat(formData.square_meters) : null,
-          deposit_months: formData.deposit_months ? parseInt(formData.deposit_months) : null,
-          availability_date: formData.availability_date || null,
-        },
-        { auth: true }
-      );
+    // Prépare les données avec les bons types avant validation
+    const raw = {
+      ...formData,
+      square_meters: formData.square_meters || null,
+      deposit_months: formData.deposit_months || null,
+      availability_date: formData.availability_date || null,
+    };
 
-      // Upload des images vers Supabase Storage puis enregistrement des URLs côté backend
+    // Validation Zod
+    const result = listingSchema.safeParse(raw);
+    if (!result.success) {
+      const errors = {};
+      result.error.issues.forEach((err) => {
+        const field = err.path[0];
+        errors[field] = err.message;
+      });
+      setFieldErrors(errors);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const newListing = await api.post("/listings", result.data, { auth: true });
+
       if (newListing?.id) {
         const imageUrls = await uploadImagesToSupabase(newListing.id);
         if (imageUrls.length) {
@@ -121,13 +146,13 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="text"
             value={formData.title}
-            onChange={(e) =>
-              setFormData({ ...formData, title: e.target.value })
-            }
-            required
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="Ex: Studio moderne centre-ville"
           />
+          {fieldErrors.title && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.title}</p>
+          )}
         </div>
 
         <div>
@@ -136,10 +161,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           </label>
           <select
             value={formData.type}
-            onChange={(e) =>
-              setFormData({ ...formData, type: e.target.value })
-            }
-            required
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           >
             <option value="studio">Studio</option>
@@ -155,14 +177,14 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         </label>
         <textarea
           value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
-          required
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={3}
           className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           placeholder="Décrivez le logement..."
         />
+        {fieldErrors.description && (
+          <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -173,14 +195,14 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="number"
             value={formData.price}
-            onChange={(e) =>
-              setFormData({ ...formData, price: e.target.value })
-            }
-            required
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
             min="0"
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="150000"
           />
+          {fieldErrors.price && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.price}</p>
+          )}
         </div>
 
         <div>
@@ -189,9 +211,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           </label>
           <select
             value={formData.currency}
-            onChange={(e) =>
-              setFormData({ ...formData, currency: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           >
             <option value="XAF">XAF</option>
@@ -207,13 +227,13 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="text"
             value={formData.city}
-            onChange={(e) =>
-              setFormData({ ...formData, city: e.target.value })
-            }
-            required
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="Douala"
           />
+          {fieldErrors.city && (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.city}</p>
+          )}
         </div>
       </div>
 
@@ -244,13 +264,13 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         <input
           type="text"
           value={formData.district}
-          onChange={(e) =>
-            setFormData({ ...formData, district: e.target.value })
-          }
-          required
+          onChange={(e) => setFormData({ ...formData, district: e.target.value })}
           className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           placeholder="Akwa"
         />
+        {fieldErrors.district && (
+          <p className="mt-1 text-xs text-red-600">{fieldErrors.district}</p>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -261,9 +281,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="number"
             value={formData.square_meters}
-            onChange={(e) =>
-              setFormData({ ...formData, square_meters: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, square_meters: e.target.value })}
             min="0"
             step="0.1"
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
@@ -278,9 +296,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="number"
             value={formData.deposit_months}
-            onChange={(e) =>
-              setFormData({ ...formData, deposit_months: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, deposit_months: e.target.value })}
             min="0"
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
             placeholder="2"
@@ -294,9 +310,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           <input
             type="date"
             value={formData.availability_date}
-            onChange={(e) =>
-              setFormData({ ...formData, availability_date: e.target.value })
-            }
+            onChange={(e) => setFormData({ ...formData, availability_date: e.target.value })}
             className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
           />
         </div>

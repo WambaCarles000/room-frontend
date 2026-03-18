@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import { z } from "zod";
+
+const settingsSchema = z.object({
+  first_name: z.string().min(2, "Le prénom doit faire au moins 2 caractères"),
+  last_name: z.string().min(2, "Le nom doit faire au moins 2 caractères"),
+  phone: z.string().optional().nullable(),
+});
+
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -17,6 +25,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
 
   useEffect(() => {
     const getUser = async () => {
@@ -65,19 +74,21 @@ export default function SettingsPage() {
     setError(null);
     setSuccess(false);
 
+    const result = settingsSchema.safeParse(formData);
+    if (!result.success) {
+      setError(result.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (!formData.first_name?.trim()) throw new Error("Le prénom est obligatoire");
-      if (!formData.last_name?.trim()) throw new Error("Le nom est obligatoire");
-      if (!formData.email?.trim()) throw new Error("L'email est obligatoire");
+      // if (!formData.first_name?.trim()) throw new Error("Le prénom est obligatoire");
+      // if (!formData.last_name?.trim()) throw new Error("Le nom est obligatoire");
+      // if (!formData.email?.trim()) throw new Error("L'email est obligatoire");
 
       await api.patch(
         `/users/me`,
-        {
-          first_name: formData.first_name.trim(),
-          last_name: formData.last_name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone?.trim() || null,
-        },
+        result.data,
         { auth: true }
       );
 
@@ -85,7 +96,7 @@ export default function SettingsPage() {
       const updatedUser = await api.get('/users/me', { auth: true });
       
       // Update Supabase metadata so Header reflects changes
-      console.log("Updated User Data:", updatedUser);
+      // console.log("Updated User Data:", updatedUser);
       const supabase = createClient();
       await supabase.auth.updateUser({
         email: updatedUser.email,
@@ -150,7 +161,7 @@ export default function SettingsPage() {
                   type="text"
                   value={formData.first_name}
                   onChange={handleChange}
-                  required
+                  
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   placeholder="Votre prénom"
                 />
@@ -165,7 +176,7 @@ export default function SettingsPage() {
                   type="text"
                   value={formData.last_name}
                   onChange={handleChange}
-                  required
+                  
                   className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
                   placeholder="Votre nom"
                 />
