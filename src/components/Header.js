@@ -2,30 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
-import { usePathname } from "next/navigation";
-
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isActive = (href) => {
-    if (href === "/" && pathname === "/") return true;
-    if (href === "/listings" && (pathname === "/listings" || pathname.startsWith("/listings/"))) return true;
-    if (href === "/favorites" && pathname === "/favorites") return true;
-    if (href === "/dashboard" && pathname === "/dashboard") return true;
-    return false;
-  };
-  const getLinkClasses = (href) => {
-    const baseClasses = "text-sm font-medium transition";
-    const activeClasses = "text-zinc-900 font-semibold"; // Actif : plus sombre
-    const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
-    return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
-  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -34,7 +20,6 @@ export default function Header() {
       setIsLoading(false);
     });
 
-    // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -56,6 +41,21 @@ export default function Header() {
     user?.email?.charAt(0).toUpperCase() ||
     "?";
 
+  const isActive = (href) => {
+    if (href === "/" && pathname === "/") return true;
+    if (href === "/listings" && (pathname === "/listings" || pathname.startsWith("/listings/"))) return true;
+    if (href === "/favorites" && pathname === "/favorites") return true;
+    if (href === "/dashboard" && pathname === "/dashboard") return true;
+    return false;
+  };
+
+  const getLinkClasses = (href) => {
+    const baseClasses = "text-sm font-medium transition";
+    const activeClasses = "text-zinc-900 font-semibold";
+    const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
+    return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
+  };
+
   return (
     <header className="fixed top-0 inset-x-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -70,30 +70,24 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Menu principal */}
-          <nav className="flex items-center gap-6">
-            {/* <Link
-              href="/listings"
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
-            >
-              Logements
-            </Link> */}
+          {/* Menu principal - Desktop seulement */}
+          <nav className="hidden md:flex items-center gap-6">
             <Link href="/listings" className={`${getLinkClasses("/listings")} relative`}>
               Logements
               {isActive("/listings") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
               )}
             </Link>
             <Link href="/favorites" className={`${getLinkClasses("/favorites")} relative`}>
               Favoris
               {isActive("/favorites") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
               )}
             </Link>
             <Link href="/dashboard" className={`${getLinkClasses("/dashboard")} relative`}>
               Dashboard
               {isActive("/dashboard") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-900"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
               )}
             </Link>
           </nav>
@@ -103,6 +97,7 @@ export default function Header() {
             {isLoading ? (
               <div className="h-10 w-10 rounded-full bg-zinc-200 animate-pulse"></div>
             ) : user ? (
+              // ← UTILISATEUR CONNECTÉ
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -114,13 +109,12 @@ export default function Header() {
 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white shadow-lg">
+                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white shadow-lg z-50">
                     {/* User Info */}
                     <div className="border-b border-zinc-200 p-4">
                       <p className="text-base font-semibold text-zinc-900 mb-1">
                         {user.user_metadata?.first_name || "Mon Profil"}
                       </p>
-                      {/* Email masqué pour plus de confidentialité */}
                     </div>
 
                     {/* Menu Items */}
@@ -250,29 +244,78 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/login"
-                  className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition hidden sm:block"
+              // ← UTILISATEUR NON CONNECTÉ
+              <>
+                {/* Desktop - Liens visibles */}
+                <div className="hidden sm:flex items-center gap-3">
+                  <Link
+                    href="/login"
+                    className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
+                  >
+                    Connexion
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
+                  >
+                    S&apos;inscrire
+                  </Link>
+                </div>
+
+                {/* Mobile - Burger menu */}
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="sm:hidden flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-300 hover:bg-zinc-100 transition"
+                  title="Menu"
                 >
-                  Connexion
-                </Link>
-                <Link
-                  href="/signup"
-                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
-                >
-                  S&apos;inscrire
-                </Link>
-              </div>
+                  <svg
+                    className="h-6 w-6 text-zinc-900"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+
+                {/* Mobile Menu Dropdown */}
+                {isMobileMenuOpen && (
+                  <div className="absolute right-4 top-16 bg-white border border-zinc-200 rounded-lg shadow-lg z-50 sm:hidden">
+                    <Link
+                      href="/login"
+                      className="block px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Connexion
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="block px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition border-t border-zinc-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      S&apos;inscrire
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
       </div>
 
-      {isDropdownOpen && (
+      {/* Backdrop pour fermer les menus */}
+      {(isDropdownOpen || isMobileMenuOpen) && (
         <div
           className="fixed inset-0 z-30"
-          onClick={() => setIsDropdownOpen(false)}
+          onClick={() => {
+            setIsDropdownOpen(false);
+            setIsMobileMenuOpen(false);
+          }}
         />
       )}
     </header>
