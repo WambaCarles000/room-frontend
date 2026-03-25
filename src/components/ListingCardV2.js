@@ -44,15 +44,22 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
   };
 
   const statusBadge = getStatusBadge(listing.status);
+  const coverImageUrl = listing?.images?.[0]?.imageUrl || null;
 
   return (
     <div className="group overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-lg h-full flex flex-col">
       {/* Image container */}
       <div className="relative h-48 w-full bg-gradient-to-br from-zinc-100 to-zinc-200 overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-center">
-          {listing.images.length > 0 ? (
-            <img src={listing.images[3].imageUrl} alt={listing.title} className="w-full h-full object-cover" />
-          ) : (<div className="w-full h-full flex items-center justify-center">
+          {coverImageUrl ? (
+            <img
+              src={coverImageUrl}
+              alt={listing.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
             <svg
               className="h-12 w-12 text-zinc-400"
               fill="none"
@@ -66,7 +73,8 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
                 d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
               />
             </svg>
-          </div>)}
+          </div>
+          )}
         </div>
 
         {/* Status badge */}

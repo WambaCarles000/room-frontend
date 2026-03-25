@@ -28,6 +28,7 @@ export default function ListingDetailsPage({ params }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showReportModal, setShowReportModal] = useState(false);
   const [token, setToken] = useState(null);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -41,6 +42,21 @@ export default function ListingDetailsPage({ params }) {
     });
     fetchListing();
   }, [id]);
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setIsLightboxOpen(false);
+      if (e.key === "ArrowLeft") {
+        setCurrentImageIndex((idx) => (idx === 0 ? images.length - 1 : idx - 1));
+      }
+      if (e.key === "ArrowRight") {
+        setCurrentImageIndex((idx) => (idx === images.length - 1 ? 0 : idx + 1));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isLightboxOpen]);
 
   async function fetchListing() {
     try {
@@ -143,8 +159,16 @@ export default function ListingDetailsPage({ params }) {
             <img
               src={images[currentImageIndex]?.imageUrl}
               alt={listing.title}
-              className="w-full h-full object-cover transition-all"
+              className="w-full h-full object-cover transition-all cursor-zoom-in"
+              onClick={() => setIsLightboxOpen(true)}
             />
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(true)}
+              className="absolute bottom-4 right-4 z-20 rounded-full bg-white/85 hover:bg-white text-zinc-900 px-4 py-2 text-xs font-semibold shadow-lg transition opacity-0 group-hover:opacity-100"
+            >
+              Voir en plein écran
+            </button>
             {images.length > 1 && (
               <>
                 <button
@@ -206,6 +230,76 @@ export default function ListingDetailsPage({ params }) {
           {/* <ShareButton listingId={id} /> */}
         </div>
       </div>
+
+      {/* Lightbox plein écran */}
+      {isLightboxOpen && hasImages && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+          onClick={() => setIsLightboxOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="absolute inset-0 flex items-center justify-center p-4 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative w-full max-w-6xl">
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="absolute -top-12 right-0 text-white/90 hover:text-white text-sm font-semibold"
+              >
+                Fermer (Esc)
+              </button>
+
+              <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group">
+                <img
+                  src={images[currentImageIndex]?.imageUrl}
+                  alt={listing.title}
+                  className="w-full max-h-[80vh] object-contain bg-black"
+                />
+
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentImageIndex(
+                          currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1
+                        )
+                      }
+                      className="absolute left-3 sm:-left-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/85 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                      aria-label="Image précédente"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentImageIndex(
+                          currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1
+                        )
+                      }
+                      className="absolute right-3 sm:-right-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/85 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                      aria-label="Image suivante"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/40 px-3 py-1 text-xs text-white/90">
+                      {currentImageIndex + 1} / {images.length}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenu principal */}
       <div className="mx-auto max-w-5xl px-4 py-12">
