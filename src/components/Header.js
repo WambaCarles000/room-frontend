@@ -141,7 +141,28 @@ export default function Header() {
                           Mon Dashboard
                         </span>
                       </Link>
-
+                      <Link
+                        href="/listings"
+                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"
+                            />
+                          </svg>
+                          Trouver un logement
+                        </span>
+                      </Link>
                       <Link
                         href="/my-listings"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"

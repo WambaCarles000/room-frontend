@@ -13,6 +13,7 @@ import { IoCheckmarkCircle } from "react-icons/io5";
 import { IoCalendar } from "react-icons/io5";
 import { CiShare2 } from "react-icons/ci";
 import Popup from "@/components/popups";
+import { CiMoneyBill } from "react-icons/ci";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
@@ -165,7 +166,7 @@ export default function ListingDetailsPage({ params }) {
             <button
               type="button"
               onClick={() => setIsLightboxOpen(true)}
-              className="absolute bottom-4 right-4 z-20 rounded-full bg-white/85 hover:bg-white text-zinc-900 px-4 py-2 text-xs font-semibold shadow-lg transition opacity-0 group-hover:opacity-100"
+              className="absolute bottom-4 right-4 z-20 rounded-full bg-white/85 hover:bg-white text-zinc-900 px-4 py-2 text-xs font-semibold shadow-lg transition opacity-100 sm-group-hover:opacity-100"
             >
               Voir en plein écran
             </button>
@@ -177,7 +178,7 @@ export default function ListingDetailsPage({ params }) {
                       currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1
                     )
                   }
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-0 group-hover:opacity-100"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-100 sm:group-hover:opacity-100"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -189,7 +190,7 @@ export default function ListingDetailsPage({ params }) {
                       currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1
                     )
                   }
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-0 group-hover:opacity-100"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-100 sm:group-hover:opacity-100"
                 >
                   <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -210,24 +211,13 @@ export default function ListingDetailsPage({ params }) {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <svg
-              className="h-24 w-24 text-zinc-700"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
+            <svg className="h-24 w-24 text-zinc-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
         )}
         <div className="absolute top-4 right-4 flex gap-2 z-20">
           <FavoriteButton listingId={id} />
-          {/* <ShareButton listingId={id} /> */}
         </div>
       </div>
 
@@ -240,10 +230,30 @@ export default function ListingDetailsPage({ params }) {
           aria-modal="true"
         >
           <div
-            className="absolute inset-0 flex items-center justify-center p-4 sm:p-8"
+            className="absolute inset-0 flex items-center justify-center  sm:p-8 group"
             onClick={(e) => e.stopPropagation()}
+            // Swipe tactile
+            onTouchStart={(e) => {
+              e._touchStartX = e.touches[0].clientX;
+            }}
+            onTouchEnd={(e) => {
+              const diff = e._touchStartX - e.changedTouches[0].clientX;
+              if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                  // Swipe gauche → image suivante
+                  setCurrentImageIndex((idx) =>
+                    idx === images.length - 1 ? 0 : idx + 1
+                  );
+                } else {
+                  // Swipe droite → image précédente
+                  setCurrentImageIndex((idx) =>
+                    idx === 0 ? images.length - 1 : idx - 1
+                  );
+                }
+              }
+            }}
           >
-            <div className="relative w-full max-w-6xl">
+            <div className="relative w-full sm:max-w-6xl">
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
@@ -252,11 +262,12 @@ export default function ListingDetailsPage({ params }) {
                 Fermer (Esc)
               </button>
 
-              <div className="relative rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 group">
+              {/* overflow-hidden retiré pour que les boutons -left-14 / -right-14 soient visibles */}
+              <div className="relative sm:rounded-2xl bg-black sm:shadow-2xl sm:border sm:border-white/10">
                 <img
                   src={images[currentImageIndex]?.imageUrl}
                   alt={listing.title}
-                  className="w-full max-h-[80vh] object-contain bg-black"
+                  className="w-full h-full sm:h-auto sm:max-h-[80vh] object-cover sm:object-contain bg-black sm:rounded-2xl"
                 />
 
                 {images.length > 1 && (
@@ -268,7 +279,7 @@ export default function ListingDetailsPage({ params }) {
                           currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1
                         )
                       }
-                      className="absolute left-3 sm:-left-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/85 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                      className="absolute left-3 sm:-left-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/90 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                       aria-label="Image précédente"
                     >
                       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +293,7 @@ export default function ListingDetailsPage({ params }) {
                           currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1
                         )
                       }
-                      className="absolute right-3 sm:-right-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/85 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus:opacity-100"
+                      className="absolute right-3 sm:-right-14 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/90 text-white shadow-lg ring-1 ring-white/10 transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                       aria-label="Image suivante"
                     >
                       <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,11 +312,18 @@ export default function ListingDetailsPage({ params }) {
         </div>
       )}
 
+
+
+
+
+
       {/* Contenu principal */}
       <div className="mx-auto max-w-5xl px-4 py-12">
         {/* En-tête */}
-        <div className="mb-12">
+        <div className="mb-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
+
+
             <div className="flex-1">
               <div className="inline-block rounded-full bg-gradient-to-r from-zinc-200 to-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 mb-4">
                 {listing.type === "studio"
@@ -314,30 +332,40 @@ export default function ListingDetailsPage({ params }) {
                     ? "🛏️ Chambre"
                     : "🏢 Appartement"}
               </div>
+
               <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-3">
                 {listing.title}
               </h1>
+
               <div className="flex items-center gap-2 text-zinc-600 text-lg">
-                <svg
-                  className="h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
+                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
                     clipRule="evenodd"
                   />
                 </svg>
+
                 <span>
                   {listing.district}, {listing.city}
                 </span>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-5xl font-bold text-zinc-900">{pricePerMonth}</p>
-              <p className="text-zinc-600 mt-2">/mois</p>
+
+            <div className="text-right sm:mt-0">
+              <p className="text-2xl font-bold text-zinc-900 flex items-center justify-end gap-2">
+                <CiMoneyBill />
+                {pricePerMonth}
+                <span className="text-zinc-400 text-base font-normal">/mois</span>
+              </p>
             </div>
+
+
+
+
+
+
+
           </div>
         </div>
 
@@ -562,7 +590,7 @@ export default function ListingDetailsPage({ params }) {
                 </div>
 
                 {/* Activité du bailleur */}
-            
+
                 <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-sm space-y-3">
                   <p className="text-xs font-bold tracking-wide  text-center text-zinc-900 ">
                     Activité
