@@ -9,8 +9,8 @@ import { createClient } from "@/lib/supabase/browser";
 const MAX_IMAGES = 10;
 const MAX_IMAGE_DIMENSION = 1600; // évite d'envoyer des images trop lourdes
 const WEBP_QUALITY = 0.78; // compromis qualité / poids
-const MAX_UPLOAD_BYTES = 3 * 1024 * 1024; // ~3Mo par image
-const MAX_INPUT_BYTES = 10 * 1024 * 1024; // ~10Mo max par fichier (avant optimisation)
+const MAX_UPLOAD_BYTES = 1 * 1024 * 1024; // ~1Mo par image apres compression(idealement)
+const MAX_INPUT_BYTES = 7 * 1024 * 1024; // ~7Mo max par fichier (avant optimisation)
 
 const listingSchema = z.object({
   title: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
