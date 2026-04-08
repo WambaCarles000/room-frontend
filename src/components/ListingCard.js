@@ -30,6 +30,10 @@ export default function ListingCard({ listing }) {
         label: "Loué",
         className: "bg-blue-100 text-blue-800",
       },
+      taken: {
+        label: "Réservé",
+        className: "bg-orange-100 text-orange-800",
+      },
     };
     return badges[status] || badges.available;
   };
@@ -79,6 +83,22 @@ export default function ListingCard({ listing }) {
           {listing.description}
         </p>
 
+        {/* Info additionnelles */}
+        <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
+          {listing.square_meters && (
+            <div className="flex items-center gap-1 text-zinc-600">
+              <span>📐</span>
+              <span>{listing.square_meters} m²</span>
+            </div>
+          )}
+          {listing.deposit_months && (
+            <div className="flex items-center gap-1 text-zinc-600">
+              <span>🔐</span>
+              <span>{listing.deposit_months} mois caution</span>
+            </div>
+          )}
+        </div>
+
         <div className="mb-4 flex items-center gap-2 text-sm text-zinc-500">
           <svg
             className="h-4 w-4"
@@ -113,9 +133,9 @@ export default function ListingCard({ listing }) {
               <p className="text-xs text-zinc-500">par mois</p>
             )}
           </div>
-          <button className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800">
+          <span className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white cursor-pointer">
             Voir détails
-          </button>
+          </span>
         </div>
       </div>
     </div>

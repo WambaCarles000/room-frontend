@@ -1,45 +1,139 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+"use client";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/browser";
+import DashboardCard from "@/components/dashboard/DashboardCard";
+import StatCard from "@/components/dashboard/StatCard";
+import UserListingsCard from "@/components/dashboard/UserListingsCard";
+import api from "@/lib/api";
+import { LuHouse } from "react-icons/lu";
+import { IoKeyOutline } from "react-icons/io5";
+import { IoCheckmarkCircle } from "react-icons/io5";
 
-  const { data: { session }, error } = await supabase.auth.getSession()
-  // console.log("Session dans /dashboard :", session);
-  // Middleware should handle this, but keeping a server-side check is a good safety net.
-  if (!user) redirect("/login");
+export default function DashboardPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  
+  const [user, setUser] = useState(null);
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        // Get current user
+        const {
+          data: { user: currentUser },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !currentUser) {
+          router.push("/login");
+          return;
+        }
+
+        // Get session for token
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setToken(session.access_token);
+        }
+
+        setUser(currentUser);
+
+        // Fetch user listings
+        const data = await api.get('/listings/user', { auth: true });
+        setListings(data || []);
+      } catch (err) {
+        console.error("Dashboard error:", err);
+        setError("Erreur lors du chargement du dashboard");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-zinc-900 animate-spin mx-auto mb-4"></div>
+          <p className="text-zinc-600">Chargement du dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950">
-      <main className="mx-auto w-full max-w-3xl px-6 py-16">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-          <form action="/auth/logout" method="post">
-            <button className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium hover:bg-zinc-50">
-              Se déconnecter
-            </button>
-          </form>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-zinc-900">Mon Dashboard</h1>
+          {/* <p className="mt-2 text-zinc-600">Gérez vos logements et votre profil</p> */}
         </div>
 
-        <div className="mt-8 rounded-xl border border-zinc-200 bg-white p-4">
-          <p className="text-sm text-zinc-600">Connecté en tant que</p>
-          <p className="mt-1 font-medium">{user.email}</p>
-        </div>
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        <div className="mt-8 flex gap-4">
-          <Link
-            href="/listings"
-            className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-          >
-            Voir les logements
-          </Link>
-          <Link href="/" className="text-sm font-medium text-zinc-600 underline">
-            Retour accueil
-          </Link>
+        {/* Stats Section */}
+        {listings.length > 0 && (
+          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard
+              label="Logements publiés"
+              value={listings.length}
+              icon={<LuHouse />}
+              variant="default"
+            />
+            <StatCard
+              label="Disponibles"
+              value={listings.filter((l) => l.status === "available").length}
+              icon={<IoCheckmarkCircle />}
+              variant="success"
+            />
+            <StatCard
+              label="Loués"
+              value={listings.filter((l) => l.status === "rented").length}
+              icon={<IoKeyOutline />}
+              variant="warning"
+            />
+          </div>
+        )}
+
+        {/* Listings Section */}
+        {listings.length > 0 && (
+          <DashboardCard title="Mes logements (aperçu)">
+            <UserListingsCard listings={listings} isLoading={loading} />
+          </DashboardCard>
+        )}
+
+        {/* Quick Actions */}
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <DashboardCard className="text-center">
+            <a
+              href="/listings"
+              className="block rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700"
+            >
+              Créer un nouveau logement
+            </a>
+          </DashboardCard>
+          <DashboardCard className="text-center">
+            <a
+              href="/favorites"
+              className="block rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
+            >
+              Mes favoris
+            </a>
+          </DashboardCard>
         </div>
       </main>
     </div>
