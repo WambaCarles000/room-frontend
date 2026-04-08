@@ -152,6 +152,13 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     setFieldErrors({});
     setLoading(true);
 
+    // Images are required to publish a listing
+    if (!images.length) {
+      setImagesValidationError("Ajoutez au moins 1 photo pour publier l'annonce.");
+      setLoading(false);
+      return;
+    }
+
     // Prépare les données avec les bons types avant validation
     const raw = {
       ...formData,

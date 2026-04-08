@@ -217,12 +217,10 @@ export default function FavoritesPage() {
           // ✅ AFFICHER LES FAVORIS FILTRÉS
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredFavorites.map((favorite) => (
-              <Link
+              <ListingCardV2
                 key={favorite.id}
-                href={`/listings/${favorite.listing.id}`}
-              >
-              <ListingCardV2 listing={favorite.listing} />
-              </Link>
+                listing={favorite.listing}
+              />
             ))}
           </div>
         )}
