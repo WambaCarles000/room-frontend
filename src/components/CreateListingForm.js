@@ -174,6 +174,19 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     }
 
     try {
+      // Require phone at publish time (role-independent)
+      try {
+        const profile = await api.get("/users/me", { auth: true });
+        if (!profile?.phone) {
+          throw new Error(
+            "Ajoutez votre numéro de téléphone dans votre profil avant de publier une annonce (Compte > Paramètres)."
+          );
+        }
+      } catch (profileErr) {
+        // If profile endpoint fails, surface message (avoid creating listing blindly)
+        throw new Error(profileErr?.message || "Impossible de vérifier votre profil.");
+      }
+
       const newListing = await api.post("/listings", result.data, { auth: true });
 
       if (newListing?.id) {

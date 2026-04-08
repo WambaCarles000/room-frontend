@@ -35,8 +35,8 @@ export default function SignupPage() {
         role,
       };
       
-      // Add phone only if user is owner
-      if (role === "owner" && phone) {
+      // Phone is an account attribute (optional), independent of role
+      if (phone) {
         profileData.phone = phone;
       }
       
@@ -83,7 +83,7 @@ export default function SignupPage() {
               first_name: firstName,
               last_name: lastName,
               role,
-              phone: role === "owner" ? phone : null,
+              phone: phone || null,
             }),
           });
 
@@ -180,28 +180,24 @@ export default function SignupPage() {
               <option value="tenant">Locataire</option>
               <option value="owner">Propriétaire</option>
             </select>
-            {role === "owner" && (
-              <p className="text-xs text-blue-600 mt-1">
-                ℹ️ Un champ pour votre numéro apparaîtra ci-dessous
-              </p>
-            )}
+            <p className="text-xs text-zinc-600 mt-1">
+              Le rôle sert à personnaliser l&apos;expérience. Vous pourrez toujours publier une annonce plus tard.
+            </p>
           </div>
 
-          {role === "owner" && (
-            <div className="space-y-1 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <label className="text-sm font-medium text-blue-900">Votre numéro de téléphone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
-                placeholder="+237 6XX XXX XXX"
-              />
-              {/* <p className="text-xs text-blue-700">
-                <strong>Note:</strong> Les locataires intéressés par vos logements pourront voir votre numéro.
-              </p> */}
-            </div>
-          )}
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Téléphone (optionnel)</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
+              placeholder="+237 6XX XXX XXX"
+            />
+            <p className="text-xs text-zinc-600">
+              Recommandé si vous comptez publier une annonce (vous pourrez aussi l&apos;ajouter plus tard dans le profil).
+            </p>
+          </div>
 
           {error ? (
             <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">

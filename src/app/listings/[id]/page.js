@@ -364,8 +364,6 @@ export default function ListingDetailsPage({ params }) {
 
 
 
-
-
           </div>
         </div>
 
