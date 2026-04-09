@@ -154,13 +154,13 @@ export default function ListingDetailsPage({ params }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100">
       {/* Galerie d'images */}
-      <div className="relative bg-zinc-900 h-96 sm:h-[500px] overflow-hidden group">
+      <div className="relative bg-zinc-900 aspect-video sm:aspect-[16/7] overflow-hidden group">
         {hasImages ? (
           <>
             <img
               src={images[currentImageIndex]?.imageUrl}
               alt={listing.title}
-              className="w-full h-full object-cover transition-all cursor-zoom-in"
+              className="w-full h-full object-cover  transition-all cursor-zoom-in"
               onClick={() => setIsLightboxOpen(true)}
             />
             <button
@@ -311,9 +311,6 @@ export default function ListingDetailsPage({ params }) {
           </div>
         </div>
       )}
-
-
-
 
 
 
