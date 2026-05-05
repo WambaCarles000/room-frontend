@@ -112,7 +112,7 @@ export default function FavoritesPage() {
           </h2>
           <Link
             href="/login"
-            className="inline-block mt-4 px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition"
+            className="inline-block mt-4 px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
           >
             Aller à la connexion
           </Link>
@@ -177,7 +177,7 @@ export default function FavoritesPage() {
             </p>
             <Link
               href="/listings"
-              className="inline-block px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition"
+              className="inline-block px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
             >
               Découvrir les annonces
             </Link>
@@ -208,7 +208,7 @@ export default function FavoritesPage() {
               onClick={() =>
                 setFilters({ search: "", status: "", types: [], maxPrice: null })
               }
-              className="inline-block px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition"
+              className="inline-block px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
             >
               Réinitialiser les filtres
             </button>

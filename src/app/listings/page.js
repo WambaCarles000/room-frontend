@@ -17,6 +17,7 @@ export default function ListingsPage() {
   const [showForm, setShowForm] = useState(false);
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set());
   const [editingListing, setEditingListing] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
@@ -32,6 +33,9 @@ export default function ListingsPage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
       setToken(session?.access_token || null);
+      if (session?.user) {
+        fetchFavoriteIds();
+      }
     });
     fetchListings();
   }, []);
@@ -86,6 +90,45 @@ export default function ListingsPage() {
     }
   }
 
+  async function fetchFavoriteIds() {
+    try {
+      const data = await api.get("/favorites/ids", { auth: true });
+      const ids = new Set((data || []).filter((id) => id != null));
+      setFavoriteIds(ids);
+    } catch (e) {
+      // non-fatal: favorites just won't be highlighted
+      setFavoriteIds(new Set());
+    }
+  }
+
+  async function toggleFavorite(listingId) {
+    if (!user || !listingId) return;
+
+    const isFav = favoriteIds.has(listingId);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (isFav) next.delete(listingId);
+      else next.add(listingId);
+      return next;
+    });
+
+    try {
+      if (isFav) {
+        await api.del(`/favorites/${listingId}`, null, { auth: true });
+      } else {
+        await api.post(`/favorites/${listingId}`, null, { auth: true });
+      }
+    } catch (e) {
+      // rollback on failure
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (isFav) next.add(listingId);
+        else next.delete(listingId);
+        return next;
+      });
+    }
+  }
+
   async function handleCreateSuccess() {
     setShowForm(false);
     await fetchListings();
@@ -117,7 +160,7 @@ export default function ListingsPage() {
             {user && (
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
               >
                 <svg
                   className="h-5 w-5"
@@ -242,6 +285,9 @@ export default function ListingsPage() {
                   listing={listing}
                   isOwner={isOwner}
                   onEditClick={() => handleOpenEditModal(listing)}
+                  canFavorite={!!user}
+                  isFavorite={favoriteIds.has(listing.id)}
+                  onToggleFavorite={toggleFavorite}
                 />
               );
             })}

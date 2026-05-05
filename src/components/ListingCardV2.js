@@ -3,7 +3,14 @@ import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
 import { IoCheckmarkCircle } from "react-icons/io5";
 
-export default function ListingCard({ listing, isOwner, onEditClick }) {
+export default function ListingCard({
+  listing,
+  isOwner,
+  onEditClick,
+  canFavorite = false,
+  isFavorite = false,
+  onToggleFavorite,
+}) {
   const formatPrice = (price, currency = "XAF") => {
     return new Intl.NumberFormat("fr-FR", {
       style: "currency",
@@ -77,8 +84,41 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
           )}
         </div>
 
+        {/* Favorite heart */}
+        {canFavorite && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggleFavorite?.(listing?.id);
+            }}
+            className={`absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition ${
+              isFavorite
+                ? "border-primary-200 bg-white/90 text-primary-600 hover:bg-primary-50"
+                : "border-primary-200 bg-white/80 text-primary-700 hover:bg-primary-50"
+            }`}
+            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+            title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <svg
+              className={`h-5 w-5 ${isFavorite ? "fill-current" : ""}`}
+              fill={isFavorite ? "currentColor" : "none"}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </button>
+        )}
+
         {/* Status badge */}
-        <div className="absolute right-3 top-3">
+        <div className="absolute left-3 top-3">
           <span
             className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge.className}`}
           >
@@ -114,7 +154,7 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
         </p>
 
         {/* Info grid */}
-        <div className="mb-4 grid grid-cols-2 gap-2 text-xs">
+        <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
           {listing.square_meters && (
             <div className="flex items-center gap-1 text-zinc-600 bg-zinc-50 rounded p-2">
               <span><LuHouse /></span>
@@ -131,7 +171,7 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
 
         {/* Location */}
         {listing.location && (
-          <div className="mb-4 flex items-start gap-2 text-sm text-zinc-600">
+          <div className="mb-2 flex items-start gap-2 text-sm text-zinc-600">
             <svg
               className="h-4 w-4 shrink-0 mt-0.5"
               fill="none"
@@ -156,8 +196,8 @@ export default function ListingCard({ listing, isOwner, onEditClick }) {
         )}
 
         {/* Price */}
-        <div className="mb-4 border-t border-zinc-100 pt-4">
-          <p className="text-2xl font-bold text-zinc-900">
+        <div className="mb-3 border-t border-zinc-100 pt-2">
+          <p className="text-lg font-semibold text-zinc-900">
             {formatPrice(listing.price)}
             <span className="text-xs font-normal text-zinc-600 ml-2">
               {listing.price_period || "/mois"}

@@ -316,7 +316,7 @@ export default function ListingDetailsPage({ params }) {
 
       {/* Contenu principal */}
       <div className="mx-auto max-w-5xl px-4 py-12">
-        {/* En-tête */}
+
         <div className="mb-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
 
@@ -459,7 +459,7 @@ export default function ListingDetailsPage({ params }) {
             </section>
 
             {/* Galerie complète */}
-            {hasImages && images.length > 1 && (
+            {/* {hasImages && images.length > 1 && (
               <section className="rounded-2xl border border-zinc-200 bg-white p-8">
                 <h2 className="text-2xl font-bold text-zinc-900 mb-6">
                   Galerie Photos
@@ -481,7 +481,7 @@ export default function ListingDetailsPage({ params }) {
                   ))}
                 </div>
               </section>
-            )}
+            )} */}
 
             {/* Formulaire de contact */}
             <section className="rounded-2xl border border-zinc-200 bg-white p-8">
@@ -534,9 +534,7 @@ export default function ListingDetailsPage({ params }) {
           <div className="space-y-6">
             {/* Propriétaire */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-8">
-              <h3 className="text-xl font-bold text-zinc-900 mb-6">
-                👤 Propriétaire
-              </h3>
+          
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">

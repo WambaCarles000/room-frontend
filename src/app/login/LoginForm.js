@@ -100,7 +100,7 @@ async function onSubmit(e) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-zinc-900 px-4 py-2 font-medium text-white hover:bg-zinc-800 disabled:opacity-50 transition"
+            className="mt-6 w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600 disabled:opacity-50 transition"
           >
             {loading ? "Connexion..." : "Se connecter"}
           </button>

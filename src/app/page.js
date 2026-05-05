@@ -21,7 +21,7 @@ export default async function Home() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/listings"
-            className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-800"
+            className="inline-flex h-11 items-center justify-center rounded-lg bg-primary-500 px-4 text-sm font-medium text-white hover:bg-primary-600"
           >
             Voir les logements
           </Link>
