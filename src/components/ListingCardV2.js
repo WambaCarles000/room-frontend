@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
-import { IoCheckmarkCircle } from "react-icons/io5";
 
 export default function ListingCard({
   listing,
