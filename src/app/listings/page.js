@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/browser";
 import CreateListingForm from "@/components/CreateListingForm";
 import ListingCardV2 from "@/components/ListingCardV2";
 import ListingFilters from "@/components/ListingFilters";
-import EditListingModal from "@/components/EditListingModal";
 import api from "@/lib/api";
 
 
@@ -16,11 +15,8 @@ export default function ListingsPage() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState(() => new Set());
-  const [editingListing, setEditingListing] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
+
   const [filters, setFilters] = useState({
     search: "",
     status: "",
@@ -32,7 +28,6 @@ export default function ListingsPage() {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
-      setToken(session?.access_token || null);
       if (session?.user) {
         fetchFavoriteIds();
       }
@@ -136,15 +131,6 @@ export default function ListingsPage() {
     setShowForm(false);
     await fetchListings();
   }
-
-  const handleOpenEditModal = (listing) => {
-    setEditingListing(listing);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    fetchListings();
-  };
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -279,38 +265,18 @@ export default function ListingsPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredListings.map((listing) => {
-              // Vérifier si l'utilisateur actuel est propriétaire du logement
-              const isOwner = listing.owner && user && listing.owner.supabase_id === user.id;
-              return (
-                <ListingCardV2
-                  key={listing.id}
-                  listing={listing}
-                  isOwner={isOwner}
-                  onEditClick={() => handleOpenEditModal(listing)}
-                  canFavorite={!!user}
-                  isFavorite={favoriteIds.has(listing.id)}
-                  onToggleFavorite={toggleFavorite}
-                />
-              );
-            })}
+            {filteredListings.map((listing) => (
+              <ListingCardV2
+                key={listing.id}
+                listing={listing}
+                canFavorite={!!user}
+                isFavorite={favoriteIds.has(listing.id)}
+                onToggleFavorite={toggleFavorite}
+              />
+            ))}
           </div>
         )}
       </div>
-
-      {/* Edit Modal */}
-      {editingListing && (
-        <EditListingModal
-          listing={editingListing}
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingListing(null);
-          }}
-          onSuccess={handleEditSuccess}
-          token={token}
-        />
-      )}
     </div>
   );
 }

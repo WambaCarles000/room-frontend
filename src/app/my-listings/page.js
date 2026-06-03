@@ -195,7 +195,8 @@ export default function MyListingsPage() {
               <ListingCardV2
                 key={listing.id}
                 listing={listing}
-                isOwner={true}
+                isOwner
+                showManageActions
                 isArchived={!!listing.archived_at}
                 isInactive={!listing.is_active && !listing.archived_at}
                 onEditClick={() => handleOpenEditModal(listing)}

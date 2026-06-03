@@ -4,7 +4,8 @@ import { IoKeyOutline } from "react-icons/io5";
 
 export default function ListingCard({
   listing,
-  isOwner,
+  isOwner = false,
+  showManageActions = false,
   isArchived = false,
   isInactive = false,
   onEditClick,
@@ -60,7 +61,11 @@ export default function ListingCard({
   return (
     <article
       className={`group h-full cursor-pointer overflow-hidden rounded-xl border bg-white shadow-sm transition-all hover:shadow-lg ${
-        isArchived || isInactive ? "border-zinc-300 opacity-75" : "border-zinc-200"
+        isArchived || isInactive
+          ? "border-zinc-300 opacity-75"
+          : showManageActions
+            ? "border-primary-300 ring-1 ring-primary-200"
+            : "border-zinc-200"
       }`}
       role="link"
       tabIndex={0}
@@ -159,15 +164,6 @@ export default function ListingCard({
             {statusBadge.label}
           </span>
         </div>
-
-        {/* Owner indicator */}
-        {isOwner && (
-          <div className="absolute left-3 top-3">
-            <span className="rounded-full bg-blue-600 text-white text-xs font-semibold px-3 py-1">
-              Votre logement
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -234,10 +230,11 @@ export default function ListingCard({
           </p>
         </div>
 
-        {/* Actions */}
-        {isOwner && (
+        {/* Actions propriétaire : uniquement sur Mes logements */}
+        {showManageActions && isOwner && (
           <div className="mt-2 flex gap-2">
             <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -248,17 +245,20 @@ export default function ListingCard({
             >
               Modifier
             </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onArchiveClick?.();
-              }}
-              className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition"
-              title={isArchived ? "Désarchiver" : "Archiver"}
-            >
-              {isArchived ? "Désarchiver" : "Archiver"}
-            </button>
+            {onArchiveClick && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onArchiveClick();
+                }}
+                className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition"
+                title={isArchived ? "Désarchiver" : "Archiver"}
+              >
+                {isArchived ? "Désarchiver" : "Archiver"}
+              </button>
+            )}
           </div>
         )}
       </div>
