@@ -51,7 +51,7 @@ export default function Header() {
 
   const getLinkClasses = (href) => {
     const baseClasses = "text-sm font-medium transition";
-    const activeClasses = "text-zinc-900 font-semibold";
+    const activeClasses = "text-primary-800 font-bold";
     const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
     return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
   };
@@ -62,7 +62,7 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo et titre */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-gradient-to-br from-zinc-900 to-zinc-700 text-white font-bold text-lg group-hover:shadow-lg transition">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-gradient-to-br from-primary-900 to-primary-700 text-white font-bold text-lg group-hover:shadow-lg transition">
               R
             </div>
             <span className="text-xl font-bold text-zinc-900 hidden sm:block">
@@ -75,19 +75,19 @@ export default function Header() {
             <Link href="/listings" className={`${getLinkClasses("/listings")} relative`}>
               Logements
               {isActive("/listings") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
             <Link href="/favorites" className={`${getLinkClasses("/favorites")} relative`}>
               Favoris
               {isActive("/favorites") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
             <Link href="/dashboard" className={`${getLinkClasses("/dashboard")} relative`}>
               Dashboard
               {isActive("/dashboard") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
           </nav>
@@ -101,7 +101,7 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-zinc-500 to-zinc-700 text-white font-semibold hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
+                  className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white font-semibold hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
                   title={user.user_metadata?.first_name || "Mon compte"}
                 >
                   {userInitial}
@@ -277,7 +277,7 @@ export default function Header() {
                   </Link>
                   <Link
                     href="/signup"
-                    className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
+                    className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
                   >
                     S&apos;inscrire
                   </Link>

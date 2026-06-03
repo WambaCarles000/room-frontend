@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/browser";
 import CreateListingForm from "@/components/CreateListingForm";
 import ListingCardV2 from "@/components/ListingCardV2";
 import ListingFilters from "@/components/ListingFilters";
-import EditListingModal from "@/components/EditListingModal";
 import api from "@/lib/api";
 
 
@@ -16,10 +15,8 @@ export default function ListingsPage() {
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [editingListing, setEditingListing] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set());
+
   const [filters, setFilters] = useState({
     search: "",
     status: "",
@@ -31,9 +28,10 @@ export default function ListingsPage() {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
-      setToken(session?.access_token || null);
+      if (session?.user) {
+        fetchFavoriteIds();
+      }
     });
-    fetchListings();
   }, []);
 
   const applyFilters = useCallback((listingsToFilter) => {
@@ -74,6 +72,10 @@ export default function ListingsPage() {
     applyFilters(allListings);
   }, [filters, allListings, applyFilters]);
 
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
   async function fetchListings() {
     try {
       setLoading(true);
@@ -86,19 +88,49 @@ export default function ListingsPage() {
     }
   }
 
+  async function fetchFavoriteIds() {
+    try {
+      const data = await api.get("/favorites/ids", { auth: true });
+      const ids = new Set((data || []).filter((id) => id != null));
+      setFavoriteIds(ids);
+    } catch (e) {
+      // non-fatal: favorites just won't be highlighted
+      setFavoriteIds(new Set());
+    }
+  }
+
+  async function toggleFavorite(listingId) {
+    if (!user || !listingId) return;
+
+    const isFav = favoriteIds.has(listingId);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (isFav) next.delete(listingId);
+      else next.add(listingId);
+      return next;
+    });
+
+    try {
+      if (isFav) {
+        await api.del(`/favorites/${listingId}`, null, { auth: true });
+      } else {
+        await api.post(`/favorites/${listingId}`, null, { auth: true });
+      }
+    } catch (e) {
+      // rollback on failure
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (isFav) next.add(listingId);
+        else next.delete(listingId);
+        return next;
+      });
+    }
+  }
+
   async function handleCreateSuccess() {
     setShowForm(false);
     await fetchListings();
   }
-
-  const handleOpenEditModal = (listing) => {
-    setEditingListing(listing);
-    setIsEditModalOpen(true);
-  };
-
-  const handleEditSuccess = () => {
-    fetchListings();
-  };
 
   return (
     <div className="min-h-screen bg-zinc-50">
@@ -117,7 +149,7 @@ export default function ListingsPage() {
             {user && (
               <button
                 onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
               >
                 <svg
                   className="h-5 w-5"
@@ -233,35 +265,18 @@ export default function ListingsPage() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredListings.map((listing) => {
-              // Vérifier si l'utilisateur actuel est propriétaire du logement
-              const isOwner = listing.owner && user && listing.owner.supabase_id === user.id;
-              return (
-                <ListingCardV2
-                  key={listing.id}
-                  listing={listing}
-                  isOwner={isOwner}
-                  onEditClick={() => handleOpenEditModal(listing)}
-                />
-              );
-            })}
+            {filteredListings.map((listing) => (
+              <ListingCardV2
+                key={listing.id}
+                listing={listing}
+                canFavorite={!!user}
+                isFavorite={favoriteIds.has(listing.id)}
+                onToggleFavorite={toggleFavorite}
+              />
+            ))}
           </div>
         )}
       </div>
-
-      {/* Edit Modal */}
-      {editingListing && (
-        <EditListingModal
-          listing={editingListing}
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingListing(null);
-          }}
-          onSuccess={handleEditSuccess}
-          token={token}
-        />
-      )}
     </div>
   );
 }

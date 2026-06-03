@@ -70,6 +70,11 @@ export default function DashboardPage() {
     );
   }
 
+  const publishedCount = listings.length;
+  const availableCount = listings.filter((l) => l.status === "available").length;
+  const rentedCount = listings.filter((l) => l.status === "rented").length;
+  const hasListings = listings.length > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -86,33 +91,42 @@ export default function DashboardPage() {
         )}
 
         {/* Stats Section */}
-        {listings.length > 0 && (
-          <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <StatCard
-              label="Logements publiés"
-              value={listings.length}
-              icon={<LuHouse />}
-              variant="default"
-            />
-            <StatCard
-              label="Disponibles"
-              value={listings.filter((l) => l.status === "available").length}
-              icon={<IoCheckmarkCircle />}
-              variant="success"
-            />
-            <StatCard
-              label="Loués"
-              value={listings.filter((l) => l.status === "rented").length}
-              icon={<IoKeyOutline />}
-              variant="warning"
-            />
-          </div>
-        )}
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard
+            label="Logements publiés"
+            value={publishedCount}
+            icon={<LuHouse />}
+            variant="default"
+          />
+          <StatCard
+            label="Disponibles"
+            value={availableCount}
+            icon={<IoCheckmarkCircle />}
+            variant="success"
+          />
+          <StatCard
+            label="Loués"
+            value={rentedCount}
+            icon={<IoKeyOutline />}
+            variant="warning"
+          />
+        </div>
 
         {/* Listings Section */}
-        {listings.length > 0 && (
+        {hasListings ? (
           <DashboardCard title="Mes logements (aperçu)">
             <UserListingsCard listings={listings} isLoading={loading} />
+          </DashboardCard>
+        ) : (
+          <DashboardCard title="Mes logements">
+            <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
+              <p className="text-base font-medium text-zinc-900">
+                Aucun logement publié pour le moment
+              </p>
+              <p className="mt-1 text-sm text-zinc-600">
+                Commencez par créer votre première annonce pour la voir apparaître ici.
+              </p>
+            </div>
           </DashboardCard>
         )}
 
@@ -128,10 +142,10 @@ export default function DashboardPage() {
           </DashboardCard>
           <DashboardCard className="text-center">
             <a
-              href="/favorites"
+              href="/listings"
               className="block rounded-lg bg-emerald-600 px-6 py-3 font-medium text-white hover:bg-emerald-700"
             >
-              Mes favoris
+              Explorer les logements
             </a>
           </DashboardCard>
         </div>

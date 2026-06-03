@@ -47,7 +47,7 @@ export function useAutoSyncProfile() {
           profileData.phone = user_metadata.phone;
         }
         
-        console.log('Auto-syncing profile data from user_metadata:', profileData);
+        // console.log('Auto-syncing profile data from user_metadata:', profileData);
 
         // Appeler /users/sync
         const syncData = await api.post('/users/sync', profileData, { auth: true });

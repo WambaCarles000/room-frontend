@@ -72,10 +72,10 @@ export default function FavoriteButton({ listingId }) {
     <button
       onClick={toggleFavorite}
       disabled={loading}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
+      className={`inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 font-medium shadow-sm backdrop-blur transition ${
         isFavorite
-          ? "bg-red-100 text-red-700 hover:bg-red-200"
-          : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+          ? "border-red-200 bg-white/90 text-red-600 hover:bg-red-50"
+          : "border-zinc-200 bg-white/80 text-zinc-800 hover:bg-primary-50"
       } disabled:opacity-50`}
     >
       <svg

@@ -342,7 +342,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           accept="image/*"
           multiple
           onChange={handleImagesChange}
-          className="block w-full text-sm text-zinc-900 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-900 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-800"
+          className="block w-full text-sm text-zinc-900 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-500 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-primary-600"
         />
         {imagesValidationError && (
           <p className="mt-1 text-xs text-red-600">{imagesValidationError}</p>
@@ -424,7 +424,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-60"
+          className="flex-1 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-60"
         >
           {loading ? "Création..." : "Créer le logement"}
         </button>
