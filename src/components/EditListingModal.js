@@ -311,7 +311,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 transition"
+              className="flex-1 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 disabled:opacity-50 transition"
             >
               {loading ? "Mise à jour..." : "Mettre à jour"}
             </button>

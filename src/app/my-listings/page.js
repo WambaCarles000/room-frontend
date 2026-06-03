@@ -18,7 +18,10 @@ export default function MyListingsPage() {
     status: "",
     types: [],
     maxPrice: null,
+    showArchived: false,
+    showHidden: false,
   });
+  const [actionMessage, setActionMessage] = useState(null);
 
   useEffect(() => {
     const loadMyListings = async () => {
@@ -64,6 +67,18 @@ export default function MyListingsPage() {
         result = result.filter((listing) => listing.price <= filters.maxPrice);
       }
 
+      if (filters.showArchived) {
+        result = result.filter((listing) => !!listing.archived_at);
+      } else if (filters.showHidden) {
+        result = result.filter(
+          (listing) => !listing.is_active && !listing.archived_at
+        );
+      } else {
+        result = result.filter(
+          (listing) => listing.is_active && !listing.archived_at
+        );
+      }
+
       setFilteredListings(result);
     },
     [filters]
@@ -78,12 +93,36 @@ export default function MyListingsPage() {
     setIsEditModalOpen(true);
   };
 
-  const handleEditSuccess = async () => {
+  const refreshListings = async () => {
     try {
       const data = await api.get("/listings/user", { auth: true });
       setAllListings(data || []);
     } catch {
       // on garde les données actuelles si erreur de rafraîchissement
+    }
+  };
+
+  const handleEditSuccess = async () => {
+    await refreshListings();
+  };
+
+  const handleArchiveToggle = async (listing) => {
+    const isArchived = !!listing.archived_at;
+    setActionMessage(null);
+    setError(null);
+    try {
+      if (isArchived) {
+        await api.patch(`/listings/${listing.id}/unarchive`, {}, { auth: true });
+        setActionMessage("Annonce réactivée dans le catalogue.");
+      } else {
+        await api.patch(`/listings/${listing.id}/archive`, {}, { auth: true });
+        setActionMessage(
+          "Annonce archivée : elle n'apparaît plus dans le catalogue. Cochez « Afficher archivés » pour la revoir."
+        );
+      }
+      await refreshListings();
+    } catch (err) {
+      setError(err.message || "Impossible de mettre à jour l'annonce");
     }
   };
 
@@ -109,10 +148,27 @@ export default function MyListingsPage() {
         filters={filters}
         onFiltersChange={setFilters}
         onReset={() =>
-          setFilters({ search: "", status: "", types: [], maxPrice: null })
+          setFilters({
+            search: "",
+            status: "",
+            types: [],
+            maxPrice: null,
+            showArchived: false,
+            showHidden: false,
+          })
         }
         totalCount={filteredListings.length}
+        showArchivedToggle
+        showHiddenToggle
       />
+
+      {actionMessage && (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            {actionMessage}
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {loading ? (
@@ -140,7 +196,12 @@ export default function MyListingsPage() {
                 key={listing.id}
                 listing={listing}
                 isOwner={true}
+                isArchived={!!listing.archived_at}
+                isInactive={!listing.is_active && !listing.archived_at}
                 onEditClick={() => handleOpenEditModal(listing)}
+                onArchiveClick={
+                  listing.status === "sold" ? undefined : () => handleArchiveToggle(listing)
+                }
               />
             ))}
           </div>

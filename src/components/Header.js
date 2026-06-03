@@ -51,7 +51,7 @@ export default function Header() {
 
   const getLinkClasses = (href) => {
     const baseClasses = "text-sm font-medium transition";
-    const activeClasses = "text-zinc-900 font-semibold";
+    const activeClasses = "text-primary-800 font-bold";
     const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
     return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
   };
@@ -75,19 +75,19 @@ export default function Header() {
             <Link href="/listings" className={`${getLinkClasses("/listings")} relative`}>
               Logements
               {isActive("/listings") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
             <Link href="/favorites" className={`${getLinkClasses("/favorites")} relative`}>
               Favoris
               {isActive("/favorites") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
             <Link href="/dashboard" className={`${getLinkClasses("/dashboard")} relative`}>
               Dashboard
               {isActive("/dashboard") && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-200"></span>
+                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
               )}
             </Link>
           </nav>

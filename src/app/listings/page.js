@@ -37,7 +37,6 @@ export default function ListingsPage() {
         fetchFavoriteIds();
       }
     });
-    fetchListings();
   }, []);
 
   const applyFilters = useCallback((listingsToFilter) => {
@@ -77,6 +76,10 @@ export default function ListingsPage() {
   useEffect(() => {
     applyFilters(allListings);
   }, [filters, allListings, applyFilters]);
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
 
   async function fetchListings() {
     try {

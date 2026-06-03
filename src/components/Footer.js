@@ -14,7 +14,7 @@ export default function Footer() {
               Room
             </h3>
             <p className="mt-3 text-sm text-zinc-600">
-              Trouvez et gérez facilement vos logements en ligne.
+              Trouvez facilement des logements en ligne.
             </p>
           </div>
 

@@ -9,6 +9,8 @@ export default function ListingFilters({
   onFiltersChange,
   onReset,
   totalCount,
+  showArchivedToggle = false,
+  showHiddenToggle = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,11 +53,18 @@ export default function ListingFilters({
     setIsOpen(false);
   };
 
+  const typeButtonClass = (type) =>
+    filters.types?.includes(type)
+      ? "bg-primary-500 text-white hover:bg-primary-600"
+      : "border border-zinc-300 text-zinc-900 hover:border-primary-300";
+
   const hasActiveFilters =
     filters.search ||
     filters.status ||
     (filters.types && filters.types.length > 0) ||
-    filters.maxPrice;
+    filters.maxPrice ||
+    filters.showArchived ||
+    filters.showHidden;
 
   return (
     <div className="sticky top-16 z-30 border-b border-zinc-200 bg-white shadow-sm">
@@ -110,11 +119,7 @@ export default function ListingFilters({
               <button
                 key={type}
                 onClick={() => handleTypeChange(type)}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap ${
-                  filters.types?.includes(type)
-                    ? "bg-zinc-900 text-white"
-                    : "border border-zinc-300 text-zinc-900 hover:border-zinc-400"
-                }`}
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
@@ -129,6 +134,42 @@ export default function ListingFilters({
             onChange={handlePriceChange}
             className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 shrink-0"
           />
+
+          {showArchivedToggle && (
+            <label className="flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.showArchived}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    showArchived: e.target.checked,
+                    showHidden: e.target.checked ? false : filters.showHidden,
+                  })
+                }
+                className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+              />
+              Afficher archivés
+            </label>
+          )}
+
+          {showHiddenToggle && (
+            <label className="flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.showHidden}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    showHidden: e.target.checked,
+                    showArchived: e.target.checked ? false : filters.showArchived,
+                  })
+                }
+                className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+              />
+              Vendus / masqués
+            </label>
+          )}
 
           {/* Reset Button */}
           {hasActiveFilters && (
@@ -167,11 +208,7 @@ export default function ListingFilters({
               <button
                 key={type}
                 onClick={() => handleTypeChange(type)}
-                className={`rounded px-2 py-1 text-xs font-medium transition whitespace-nowrap ${
-                  filters.types?.includes(type)
-                    ? "bg-zinc-900 text-white"
-                    : "border border-zinc-300 text-zinc-900 hover:border-zinc-400"
-                }`}
+                className={`rounded px-2 py-1 text-xs font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
@@ -186,6 +223,42 @@ export default function ListingFilters({
             onChange={handlePriceChange}
             className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-600 font-medium placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-20 shrink-0"
           />
+
+          {showArchivedToggle && (
+            <label className="flex items-center gap-1 rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.showArchived}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    showArchived: e.target.checked,
+                    showHidden: e.target.checked ? false : filters.showHidden,
+                  })
+                }
+                className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+              />
+              Archivés
+            </label>
+          )}
+
+          {showHiddenToggle && (
+            <label className="flex items-center gap-1 rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 shrink-0 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={!!filters.showHidden}
+                onChange={(e) =>
+                  onFiltersChange({
+                    ...filters,
+                    showHidden: e.target.checked,
+                    showArchived: e.target.checked ? false : filters.showArchived,
+                  })
+                }
+                className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+              />
+              Vendus / masqués
+            </label>
+          )}
 
           {/* Reset Button - Compact */}
           {hasActiveFilters && (
@@ -261,11 +334,7 @@ export default function ListingFilters({
                     <button
                       key={type}
                       onClick={() => handleTypeChange(type)}
-                      className={`rounded-lg px-3 py-2 text-sm font-medium transition text-left ${
-                        filters.types?.includes(type)
-                          ? "bg-zinc-900 text-white"
-                          : "border border-zinc-300 text-zinc-900 hover:border-zinc-400"
-                      }`}
+                      className={`rounded-lg px-3 py-2 text-sm font-medium transition text-left ${typeButtonClass(type)}`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </button>
@@ -273,9 +342,45 @@ export default function ListingFilters({
                 </div>
               </div>
 
+              {showArchivedToggle && (
+                <label className="flex items-center gap-2 text-sm text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={!!filters.showArchived}
+                    onChange={(e) =>
+                      onFiltersChange({
+                        ...filters,
+                        showArchived: e.target.checked,
+                        showHidden: e.target.checked ? false : filters.showHidden,
+                      })
+                    }
+                    className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+                  />
+                  Afficher les logements archivés
+                </label>
+              )}
+
+              {showHiddenToggle && (
+                <label className="flex items-center gap-2 text-sm text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={!!filters.showHidden}
+                    onChange={(e) =>
+                      onFiltersChange({
+                        ...filters,
+                        showHidden: e.target.checked,
+                        showArchived: e.target.checked ? false : filters.showArchived,
+                      })
+                    }
+                    className="rounded border-zinc-300 text-primary-500 focus:ring-primary-500"
+                  />
+                  Afficher vendus / masqués (hors catalogue)
+                </label>
+              )}
+
               {/* Max Price Filter */}
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-2">
+                <label className="block text-xs font-bold text-zinc-900 mb-2">
                   Prix maximum
                 </label>
                 <input

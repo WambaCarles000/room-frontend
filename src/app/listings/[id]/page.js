@@ -7,11 +7,11 @@ import Link from "next/link";
 import FavoriteButton from "@/components/FavoriteButton";
 import ShareButton from "@/components/ShareButton";
 import ReportModal from "@/components/ReportModal";
+import ContactOwnerPanel from "@/components/ContactOwnerPanel";
 import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { IoCalendar } from "react-icons/io5";
-import { CiShare2 } from "react-icons/ci";
 import Popup from "@/components/popups";
 import { CiMoneyBill } from "react-icons/ci";
 
@@ -24,8 +24,6 @@ export default function ListingDetailsPage({ params }) {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showReportModal, setShowReportModal] = useState(false);
   const [token, setToken] = useState(null);
@@ -75,34 +73,6 @@ export default function ListingDetailsPage({ params }) {
       setError(err.message);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleSendMessage(e) {
-    e.preventDefault();
-    if (!user || !message.trim()) return;
-
-    setSending(true);
-    try {
-      const res = await fetch(`${API_URL}/contact-requests`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.accessToken}`,
-        },
-        body: JSON.stringify({
-          message: message.trim(),
-          listingId: id,
-        }),
-      });
-      if (res.ok) {
-        setMessage("");
-        alert("Message envoyé avec succès !");
-      }
-    } catch (err) {
-      alert("Erreur lors de l'envoi du message");
-    } finally {
-      setSending(false);
     }
   }
 
@@ -483,106 +453,19 @@ export default function ListingDetailsPage({ params }) {
               </section>
             )} */}
 
-            {/* Formulaire de contact */}
-            <section className="rounded-2xl border border-zinc-200 bg-white p-8">
-              <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                Interested? Send a message
-              </h2>
-              {user ? (
-                <form onSubmit={handleSendMessage} className="space-y-4">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Écrivez votre message..."
-                    rows="5"
-                    className="w-full rounded-xl border border-zinc-200 p-4 text-zinc-900 placeholder-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition text-base"
-                    required
-                  />
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="w-full rounded-xl bg-gradient-to-r from-zinc-900 to-zinc-800 px-6 py-4 font-semibold text-white hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition text-lg"
-                  >
-                    {sending ? "📤 Envoi en cours..." : "✉️ Envoyer le message"}
-                  </button>
-                </form>
-              ) : (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-                  <p className="font-medium">
-                    Connectez-vous pour envoyer un message au propriétaire
-                  </p>
-                  <div className="mt-4 flex gap-2">
-                    <Link
-                      href="/login"
-                      className="flex-1 rounded-lg bg-amber-200 px-4 py-2 text-center font-medium hover:bg-amber-300 transition"
-                    >
-                      Se connecter
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="flex-1 rounded-lg border border-amber-300 px-4 py-2 text-center font-medium hover:bg-amber-100 transition"
-                    >
-                      S&apos;inscrire
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </section>
+            {/* Formulaire de contact retiré : contact direct via ContactOwnerPanel */}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Propriétaire */}
             <div className="rounded-2xl border border-zinc-200 bg-white p-8">
-          
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                    {listing.owner?.email?.charAt(0).toUpperCase() || "?"}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-zinc-900 text-lg">Propriétaire</p>
-                    <p className="text-sm text-zinc-600 truncate">
-                      {listing.owner?.email || "Inconnu"}
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2 pt-4 border-t border-zinc-200">
-                  {listing.owner?.phone && (
-                    <a
-                      href={`tel:${listing.owner.phone}`}
-                      className="flex items-center justify-center gap-2 w-full rounded-lg border border-zinc-200 px-4 py-3 font-medium text-zinc-900 hover:bg-zinc-50 transition"
-                    >
-                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773c.418 1.738 1.48 3.578 2.922 5.02a9.716 9.716 0 005.02 2.922l.773-1.548a1 1 0 011.06-.54l4.435.74a1 1 0 01.836.986V17a2 2 0 01-2 2h-1C9.716 19 3 12.284 3 4V3z" />
-                      </svg>
-                      Appeler
-                    </a>
-                  )}
-                  <a
-                    href={`mailto:${listing.owner?.email}`}
-                    className="flex items-center justify-center gap-2 w-full rounded-lg bg-zinc-900 px-4 py-3 font-medium text-white hover:bg-zinc-800 transition"
-                  >
-                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                    Email
-                  </a>
-                  {user?.email !== listing.owner?.email && (
-                    <button
-                      onClick={() => setShowReportModal(true)}
-                      className="flex items-center justify-center gap-2 w-full rounded-lg border border-red-200 px-4 py-3 font-medium text-red-600 hover:bg-red-50 transition"
-                    >
-                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.82 1.573l-7 10A1 1 0 08 15H3a3 3 0 01-3-3V6a1 1 0 011-1h.01a1 1 0 01-1-1z" clipRule="evenodd" />
-                      </svg>
-                      Signaler
-                    </button>
-                  )}
-                </div>
-
-                {/* Activité du bailleur */}
+              <ContactOwnerPanel
+                owner={listing.owner}
+                user={user}
+                listingTitle={listing.title}
+                onReportClick={() => setShowReportModal(true)}
+              />
 
                 <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-sm space-y-3">
                   <p className="text-xs font-bold tracking-wide  text-center text-zinc-900 ">
@@ -650,9 +533,6 @@ export default function ListingDetailsPage({ params }) {
                     );
                   })()}
                 </div>
-
-
-              </div>
             </div>
 
             {/* Partager */}
@@ -681,10 +561,11 @@ export default function ListingDetailsPage({ params }) {
         </div>
 
         {/* Retour */}
-        <div className="mt-16 pt-8 border-t border-zinc-200 text-center">
+        <div className="mt-13 pt-5 border-t border-zinc-200 text-center">
           <Link
             href="/listings"
-            className="inline-flex items-center gap-2 text-zinc-600 hover:text-zinc-900 font-semibold text-lg"
+            className="inline-flex items-center gap-2 text-primary-500  font-bold hover:text-primary-600 text-lg"
+        
           >
             <svg
               className="h-5 w-5"
