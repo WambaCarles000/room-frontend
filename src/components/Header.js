@@ -4,8 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
-import api from "@/lib/api";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
+
+const PUBLIC_NAV = [{ href: "/listings", label: "Logements" }];
+
+const AUTH_NAV = [
+  { href: "/favorites", label: "Favoris" },
+  { href: "/dashboard", label: "Dashboard" },
+];
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -31,11 +37,22 @@ export default function Header() {
     return () => subscription?.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsDropdownOpen(false);
+  }, [pathname]);
+
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
     setUser(null);
     setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  }
+
+  function closeMenus() {
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
   }
 
   const userInitial =
@@ -48,6 +65,7 @@ export default function Header() {
     if (href === "/listings" && (pathname === "/listings" || pathname.startsWith("/listings/"))) return true;
     if (href === "/favorites" && pathname === "/favorites") return true;
     if (href === "/dashboard" && pathname === "/dashboard") return true;
+    if (href === "/my-listings" && pathname === "/my-listings") return true;
     return false;
   };
 
@@ -59,12 +77,20 @@ export default function Header() {
     return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
   };
 
+  const getMobileLinkClasses = (href) => {
+    const base = "block rounded-lg px-3 py-2.5 text-sm font-medium transition";
+    return isActive(href)
+      ? `${base} bg-primary-500 text-white`
+      : `${base} text-zinc-800 hover:bg-primary-50 hover:text-primary-700`;
+  };
+
+  const navLinks = user ? [...PUBLIC_NAV, ...AUTH_NAV] : PUBLIC_NAV;
+
   return (
     <header className="fixed top-0 inset-x-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo et titre */}
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-3 group" onClick={closeMenus}>
             <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-gradient-to-br from-primary-900 to-primary-700 text-white font-bold text-lg group-hover:shadow-lg transition">
               R
             </div>
@@ -73,27 +99,22 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Menu principal - Desktop seulement */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/listings" className={getLinkClasses("/listings")}>
-              Logements
-            </Link>
-            <Link href="/favorites" className={getLinkClasses("/favorites")}>
-              Favoris
-            </Link>
-            <Link href="/dashboard" className={getLinkClasses("/dashboard")}>
-              Dashboard
-            </Link>
+          {/* Menu principal — desktop */}
+          <nav className="hidden md:flex items-center gap-2">
+            {navLinks.map((item) => (
+              <Link key={item.href} href={item.href} className={getLinkClasses(item.href)}>
+                {item.label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Profil utilisateur */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             {isLoading ? (
-              <div className="h-10 w-10 rounded-full bg-zinc-200 animate-pulse"></div>
+              <div className="h-10 w-10 rounded-full bg-zinc-200 animate-pulse" />
             ) : user ? (
-              // ← UTILISATEUR CONNECTÉ
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <button
+                  type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-white font-semibold hover:shadow-lg transition focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2"
                   title={user.user_metadata?.first_name || "Mon compte"}
@@ -101,160 +122,61 @@ export default function Header() {
                   {userInitial}
                 </button>
 
-                {/* Dropdown Menu */}
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-xl border border-zinc-200 bg-white shadow-lg z-50">
-                    {/* User Info */}
                     <div className="border-b border-zinc-200 p-4">
                       <p className="text-base font-semibold text-zinc-900 mb-1">
                         {user.user_metadata?.first_name || "Mon Profil"}
                       </p>
                     </div>
 
-                    {/* Menu Items */}
                     <div className="p-2">
                       <Link
                         href="/dashboard"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={closeMenus}
                       >
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                            />
-                          </svg>
-                          Mon Dashboard
-                        </span>
+                        Mon Dashboard
                       </Link>
                       <Link
                         href="/listings"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={closeMenus}
                       >
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"
-                            />
-                          </svg>
-                          Trouver un logement
-                        </span>
+                        Trouver un logement
                       </Link>
                       <Link
                         href="/my-listings"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={closeMenus}
                       >
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"
-                            />
-                          </svg>
-                          Mes logements
-                        </span>
+                        Mes logements
                       </Link>
-
                       <Link
                         href="/favorites"
                         className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
-                        onClick={() => setIsDropdownOpen(false)}
+                        onClick={closeMenus}
                       >
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                            />
-                          </svg>
-                          Mes favoris
-                        </span>
+                        Mes favoris
                       </Link>
-
                       <button
                         type="button"
                         className="block w-full px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition text-left"
                         onClick={() => {
-                          setIsDropdownOpen(false);
+                          closeMenus();
                           setIsSettingsOpen(true);
                         }}
                       >
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                          </svg>
-                          Paramètres
-                        </span>
+                        Paramètres
                       </button>
                     </div>
 
-                    {/* Logout */}
                     <div className="border-t border-zinc-200 p-2">
                       <button
+                        type="button"
                         onClick={handleLogout}
-                        className="w-full px-4 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition font-medium flex items-center gap-2"
+                        className="w-full px-4 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition font-medium"
                       >
-                        <svg
-                          className="h-4 w-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                          />
-                        </svg>
                         Se déconnecter
                       </button>
                     </div>
@@ -262,78 +184,125 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              // ← UTILISATEUR NON CONNECTÉ
-              <>
-                {/* Desktop - Liens visibles */}
-                <div className="hidden sm:flex items-center gap-3">
-                  <Link
-                    href="/login"
-                    className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
-                  >
-                    Connexion
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
-                  >
-                    S&apos;inscrire
-                  </Link>
-                </div>
-
-                {/* Mobile - Burger menu */}
-                <button
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="sm:hidden flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-300 hover:bg-zinc-100 transition"
-                  title="Menu"
+              <div className="hidden md:flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className="text-sm font-medium text-zinc-600 hover:text-zinc-900 transition"
                 >
-                  <svg
-                    className="h-6 w-6 text-zinc-900"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </button>
-
-                {/* Mobile Menu Dropdown */}
-                {isMobileMenuOpen && (
-                  <div className="absolute right-4 top-16 bg-white border border-zinc-200 rounded-lg shadow-lg z-50 sm:hidden">
-                    <Link
-                      href="/login"
-                      className="block px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      Connexion
-                    </Link>
-                    <Link
-                      href="/signup"
-                      className="block px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition border-t border-zinc-200"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      S&apos;inscrire
-                    </Link>
-                  </div>
-                )}
-              </>
+                  Connexion
+                </Link>
+                <Link
+                  href="/signup"
+                  className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
+                >
+                  S&apos;inscrire
+                </Link>
+              </div>
             )}
+
+            {/* Hamburger — mobile */}
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden flex items-center justify-center h-10 w-10 rounded-lg border border-zinc-300 hover:bg-zinc-100 transition"
+              aria-expanded={isMobileMenuOpen}
+              aria-label={isMobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            >
+              {isMobileMenuOpen ? (
+                <svg className="h-6 w-6 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-6 w-6 text-zinc-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Backdrop pour fermer les menus */}
+      {/* Menu mobile */}
+      {isMobileMenuOpen && (
+        <nav className="md:hidden border-t border-zinc-200 bg-white px-4 py-4 shadow-lg relative z-50">
+          {user && (
+            <div className="mb-3 flex items-center gap-3 rounded-lg bg-zinc-50 px-3 py-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-700 text-sm font-semibold text-white">
+                {userInitial}
+              </div>
+              <p className="text-sm font-semibold text-zinc-900">
+                {user.user_metadata?.first_name || user.email || "Mon compte"}
+              </p>
+            </div>
+          )}
+
+          <ul className="space-y-1">
+            {navLinks.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className={getMobileLinkClasses(item.href)} onClick={closeMenus}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+            {user && (
+              <>
+                <li>
+                  <Link href="/my-listings" className={getMobileLinkClasses("/my-listings")} onClick={closeMenus}>
+                    Mes logements
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-800 hover:bg-primary-50 hover:text-primary-700"
+                    onClick={() => {
+                      closeMenus();
+                      setIsSettingsOpen(true);
+                    }}
+                  >
+                    Paramètres
+                  </button>
+                </li>
+              </>
+            )}
+          </ul>
+
+          <div className="mt-4 border-t border-zinc-100 pt-4">
+            {user ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                Se déconnecter
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  className="rounded-lg border border-zinc-200 px-4 py-2.5 text-center text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+                  onClick={closeMenus}
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href="/signup"
+                  className="rounded-lg bg-primary-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-600"
+                  onClick={closeMenus}
+                >
+                  S&apos;inscrire
+                </Link>
+              </div>
+            )}
+          </div>
+        </nav>
+      )}
+
       {(isDropdownOpen || isMobileMenuOpen) && (
         <div
-          className="fixed inset-0 z-30"
-          onClick={() => {
-            setIsDropdownOpen(false);
-            setIsMobileMenuOpen(false);
-          }}
+          className="fixed inset-0 z-30 top-16 md:top-0"
+          onClick={closeMenus}
+          aria-hidden="true"
         />
       )}
 
