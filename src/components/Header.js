@@ -50,9 +50,10 @@ export default function Header() {
   };
 
   const getLinkClasses = (href) => {
-    const baseClasses = "text-sm font-medium transition";
-    const activeClasses = "text-primary-800 font-bold";
-    const inactiveClasses = "text-zinc-600 hover:text-zinc-900";
+    const baseClasses =
+      "rounded-lg px-3 py-2 text-sm font-medium transition-colors";
+    const activeClasses = "bg-primary-500 text-white";
+    const inactiveClasses = "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900";
     return isActive(href) ? `${baseClasses} ${activeClasses}` : `${baseClasses} ${inactiveClasses}`;
   };
 
@@ -72,23 +73,14 @@ export default function Header() {
 
           {/* Menu principal - Desktop seulement */}
           <nav className="hidden md:flex items-center gap-6">
-            <Link href="/listings" className={`${getLinkClasses("/listings")} relative`}>
+            <Link href="/listings" className={getLinkClasses("/listings")}>
               Logements
-              {isActive("/listings") && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
-              )}
             </Link>
-            <Link href="/favorites" className={`${getLinkClasses("/favorites")} relative`}>
+            <Link href="/favorites" className={getLinkClasses("/favorites")}>
               Favoris
-              {isActive("/favorites") && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
-              )}
             </Link>
-            <Link href="/dashboard" className={`${getLinkClasses("/dashboard")} relative`}>
+            <Link href="/dashboard" className={getLinkClasses("/dashboard")}>
               Dashboard
-              {isActive("/dashboard") && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 rounded-t bg-primary-500"></span>
-              )}
             </Link>
           </nav>
 

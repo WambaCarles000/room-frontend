@@ -14,6 +14,7 @@ import { IoCheckmarkCircle } from "react-icons/io5";
 import { IoCalendar } from "react-icons/io5";
 import Popup from "@/components/popups";
 import { CiMoneyBill } from "react-icons/ci";
+import { formatMemberSince } from "@/lib/formatDate";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
@@ -124,70 +125,106 @@ export default function ListingDetailsPage({ params }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100">
       {/* Galerie d'images */}
-      <div className="relative bg-zinc-900 aspect-video sm:aspect-[16/7] overflow-hidden group">
-        {hasImages ? (
-          <>
-            <img
-              src={images[currentImageIndex]?.imageUrl}
-              alt={listing.title}
-              className="w-full h-full object-cover  transition-all cursor-zoom-in"
-              onClick={() => setIsLightboxOpen(true)}
-            />
-            <button
-              type="button"
-              onClick={() => setIsLightboxOpen(true)}
-              className="absolute bottom-4 right-4 z-20 rounded-full bg-white/85 hover:bg-white text-zinc-900 px-4 py-2 text-xs font-semibold shadow-lg transition opacity-100 sm-group-hover:opacity-100"
-            >
-              Voir en plein écran
-            </button>
-            {images.length > 1 && (
-              <>
+      <div className="bg-transparent">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="relative">
+            {hasImages ? (
+              <div className="grid grid-cols-1 gap-2 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm lg:grid-cols-4 lg:grid-rows-2">
                 <button
-                  onClick={() =>
-                    setCurrentImageIndex(
-                      currentImageIndex === 0 ? images.length - 1 : currentImageIndex - 1
-                    )
-                  }
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-100 sm:group-hover:opacity-100"
+                  type="button"
+                  onClick={() => setIsLightboxOpen(true)}
+                  className="relative col-span-1 row-span-1 h-[44vh] min-h-[280px] overflow-hidden bg-zinc-100 lg:col-span-2 lg:row-span-2 lg:h-[520px]"
+                  title="Voir les photos"
                 >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={images[currentImageIndex]?.imageUrl}
+                    alt={listing.title}
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
                 </button>
-                <button
-                  onClick={() =>
-                    setCurrentImageIndex(
-                      currentImageIndex === images.length - 1 ? 0 : currentImageIndex + 1
-                    )
-                  }
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-white/80 text-zinc-900 hover:bg-white shadow-lg transition opacity-100 sm:group-hover:opacity-100"
-                >
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.map((_, idx) => (
+
+                {images.slice(0, 4).map((img, idx) => {
+                  const absoluteIdx = idx;
+                  return (
                     <button
-                      key={idx}
-                      onClick={() => setCurrentImageIndex(idx)}
-                      className={`h-2 rounded-full transition ${idx === currentImageIndex ? "bg-white w-8" : "bg-white/50 w-2"
-                        }`}
-                    />
-                  ))}
-                </div>
-              </>
+                      key={img?.id || img?.imageUrl || idx}
+                      type="button"
+                      onClick={() => {
+                        setCurrentImageIndex(absoluteIdx);
+                        setIsLightboxOpen(true);
+                      }}
+                      className="relative hidden h-[256px] overflow-hidden bg-zinc-100 lg:block"
+                      title="Voir la photo"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img?.imageUrl}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                      {absoluteIdx === currentImageIndex && (
+                        <span className="absolute inset-0 ring-2 ring-white/90" />
+                      )}
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(true)}
+                  className="absolute bottom-3 right-3 z-10 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-lg hover:bg-white"
+                >
+                  Voir toutes les photos
+                </button>
+
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentImageIndex((idx) =>
+                          idx === 0 ? images.length - 1 : idx - 1
+                        )
+                      }
+                      className="absolute left-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/85 p-2 text-zinc-900 shadow-lg hover:bg-white"
+                      title="Photo précédente"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCurrentImageIndex((idx) =>
+                          idx === images.length - 1 ? 0 : idx + 1
+                        )
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 z-10 rounded-full bg-white/85 p-2 text-zinc-900 shadow-lg hover:bg-white"
+                      title="Photo suivante"
+                    >
+                      <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div className="flex h-[44vh] min-h-[280px] items-center justify-center rounded-2xl border border-zinc-200 bg-white shadow-sm">
+                <svg className="h-24 w-24 text-zinc-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
             )}
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <svg className="h-24 w-24 text-zinc-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+
+            <div className="absolute right-3 top-3 z-10 flex gap-2">
+              <FavoriteButton listingId={id} />
+            </div>
           </div>
-        )}
-        <div className="absolute top-4 right-4 flex gap-2 z-20">
-          <FavoriteButton listingId={id} />
         </div>
       </div>
 
@@ -479,6 +516,7 @@ export default function ListingDetailsPage({ params }) {
                     const sold = listing.owner?.sold_listings ?? 0;
                     const reports = listing.owner?.reports_count ?? 0;
                     const available = Math.max(total - rented - taken - sold, 0);
+                    const memberSince = formatMemberSince(listing.owner?.created_at);
 
                     return (
                       <>
@@ -520,6 +558,12 @@ export default function ListingDetailsPage({ params }) {
 
                         {/* Footer avec infos complémentaires */}
                         <div className="space-y-2 pt-2 border-t border-zinc-200">
+                          {memberSince && (
+                            <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-600">
+                              <IoCalendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                              {memberSince}
+                            </p>
+                          )}
                           <div className="flex items-center justify-between text-xs text-zinc-600">
                             <span className="font-medium">
                               {total} logement{total !== 1 ? "s" : ""} au total

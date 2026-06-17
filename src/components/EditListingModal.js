@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import api from "@/lib/api";
 import { toInputDate } from "@/lib/formatDate";
+import { createClient } from "@/lib/supabase/browser";
 
 const listingSchema = z.object({
   title: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
@@ -31,10 +32,139 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   const [success, setSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
+  const MAX_IMAGES = 10;
+  const MAX_IMAGE_DIMENSION = 1600;
+  const WEBP_QUALITY = 0.78;
+  const MAX_UPLOAD_BYTES = 1 * 1024 * 1024; // ~1Mo après compression
+  const MAX_INPUT_BYTES = 7 * 1024 * 1024; // ~7Mo max par fichier (avant optimisation)
+
+  const [keptImageUrls, setKeptImageUrls] = useState(() =>
+    (listing?.images || []).map((img) => img?.imageUrl).filter(Boolean)
+  );
+  const [newImages, setNewImages] = useState([]);
+  const [imagesValidationError, setImagesValidationError] = useState(null);
+
+  useEffect(() => {
+    setFormData({
+      ...listing,
+      availability_date: listing?.availability_date ? toInputDate(listing.availability_date) : "",
+    });
+    setKeptImageUrls((listing?.images || []).map((img) => img?.imageUrl).filter(Boolean));
+    setNewImages([]);
+    setImagesValidationError(null);
+    setError(null);
+    setSuccess(false);
+    setFieldErrors({});
+  }, [listing]);
+
+  const existingCount = keptImageUrls.length;
+  const remainingSlots = Math.max(MAX_IMAGES - existingCount, 0);
+
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes <= 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+    const value = bytes / Math.pow(1024, i);
+    return `${value.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
+  };
+
+  const newImagePreviews = useMemo(() => {
+    return newImages.map((f) => ({
+      file: f,
+      url: URL.createObjectURL(f),
+    }));
+  }, [newImages]);
+
+  useEffect(() => {
+    return () => {
+      newImagePreviews.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, [newImagePreviews]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const handleImagesChange = (e) => {
+    setImagesValidationError(null);
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    const accepted = [];
+    const rejected = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (f.size > MAX_INPUT_BYTES) rejected.push(f);
+      else accepted.push(f);
+    }
+
+    const next = [...newImages, ...accepted].slice(0, remainingSlots);
+    setNewImages(next);
+
+    if (rejected.length > 0) {
+      setImagesValidationError(
+        `${rejected.length} image(s) ignorée(s) car elles dépassent ${formatBytes(MAX_INPUT_BYTES)}.`
+      );
+    } else if (accepted.length > 0 && next.length < newImages.length + accepted.length) {
+      setImagesValidationError(`Limite atteinte: maximum ${MAX_IMAGES} photos par logement.`);
+    }
+  };
+
+  async function uploadImagesToSupabase(listingId, files) {
+    if (!files?.length) return [];
+    const supabase = createClient();
+    const uploadedUrls = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const fileName = `${Date.now()}-${i}.webp`;
+      const path = `listings/${listingId}/${fileName}`;
+
+      let optimizedBlob = null;
+      try {
+        const bitmap = await createImageBitmap(file);
+        const { width, height } = bitmap;
+        const maxDim = Math.max(width, height);
+        const scale = maxDim > MAX_IMAGE_DIMENSION ? MAX_IMAGE_DIMENSION / maxDim : 1;
+
+        const targetWidth = Math.max(1, Math.round(width * scale));
+        const targetHeight = Math.max(1, Math.round(height * scale));
+
+        const canvas = document.createElement("canvas");
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Unable to create 2d context");
+
+        ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+
+        const qualities = [WEBP_QUALITY, 0.68, 0.58, 0.48, 0.38];
+        for (let qi = 0; qi < qualities.length; qi++) {
+          const q = qualities[qi];
+          // eslint-disable-next-line no-await-in-loop
+          optimizedBlob = await new Promise((resolve) => {
+            canvas.toBlob((b) => resolve(b), "image/webp", q);
+          });
+          if (optimizedBlob && optimizedBlob.size <= MAX_UPLOAD_BYTES) break;
+        }
+      } catch (_err) {
+        optimizedBlob = file;
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("listings")
+        .upload(path, optimizedBlob, { upsert: false, contentType: "image/webp" });
+
+      if (uploadError) continue;
+
+      const { data } = supabase.storage.from("listings").getPublicUrl(path);
+      if (data?.publicUrl) uploadedUrls.push(data.publicUrl);
+    }
+
+    return uploadedUrls;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,6 +194,14 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
 
     try {
       await api.patch(`/listings/${listing.id}`, result.data, { auth: true });
+
+      const hasImageChanges = newImages.length > 0 || keptImageUrls.length !== (listing?.images || []).length;
+      if (hasImageChanges) {
+        const uploaded = await uploadImagesToSupabase(listing.id, newImages);
+        const nextUrls = [...keptImageUrls, ...uploaded].slice(0, MAX_IMAGES);
+        await api.patch(`/listings/${listing.id}/images`, { images: nextUrls }, { auth: true });
+      }
+
       setSuccess(true);
       setTimeout(() => {
         onSuccess();
@@ -182,6 +320,72 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
               </select>
               {fieldErrors.type && (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.type}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Images */}
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+            <p className="text-sm font-semibold text-zinc-900">Photos</p>
+            <p className="mt-1 text-xs text-zinc-600">
+              Maximum {MAX_IMAGES} photos. Vous pouvez retirer des photos existantes et en ajouter de nouvelles.
+            </p>
+
+            {keptImageUrls.length > 0 && (
+              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {keptImageUrls.map((url) => (
+                  <div key={url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="h-20 w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setKeptImageUrls((prev) => prev.filter((u) => u !== url))}
+                      className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                      title="Retirer"
+                    >
+                      Retirer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-zinc-700 mb-1">
+                Ajouter des photos{" "}
+                <span className="text-zinc-500">
+                  (reste {remainingSlots} place{remainingSlots !== 1 ? "s" : ""})
+                </span>
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                disabled={remainingSlots <= 0}
+                onChange={handleImagesChange}
+                className="block w-full text-sm text-zinc-900 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-500 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-primary-600 disabled:opacity-60"
+              />
+              {imagesValidationError && (
+                <p className="mt-1 text-xs text-red-600">{imagesValidationError}</p>
+              )}
+
+              {newImagePreviews.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {newImagePreviews.map((p) => (
+                    <div key={p.url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={p.url} alt="" className="h-20 w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setNewImages((prev) => prev.filter((f) => f !== p.file))}
+                        className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                        title="Retirer"
+                      >
+                        Retirer
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
