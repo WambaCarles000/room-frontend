@@ -5,12 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import ProfileSettingsModal from "@/components/ProfileSettingsModal";
 
 export default function Header() {
   const [user, setUser] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -201,10 +203,13 @@ export default function Header() {
                         </span>
                       </Link>
 
-                      <Link
-                        href="/account/settings"
-                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
-                        onClick={() => setIsDropdownOpen(false)}
+                      <button
+                        type="button"
+                        className="block w-full px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition text-left"
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          setIsSettingsOpen(true);
+                        }}
                       >
                         <span className="flex items-center gap-2">
                           <svg
@@ -228,7 +233,7 @@ export default function Header() {
                           </svg>
                           Paramètres
                         </span>
-                      </Link>
+                      </button>
                     </div>
 
                     {/* Logout */}
@@ -331,6 +336,17 @@ export default function Header() {
           }}
         />
       )}
+
+      <ProfileSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onSuccess={() => {
+          const supabase = createClient();
+          supabase.auth.getUser().then(({ data: { user: refreshed } }) => {
+            setUser(refreshed);
+          });
+        }}
+      />
     </header>
   );
 }

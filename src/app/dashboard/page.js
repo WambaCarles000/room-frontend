@@ -14,17 +14,14 @@ import { IoCheckmarkCircle } from "react-icons/io5";
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
-  
-  const [user, setUser] = useState(null);
+
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(null);
 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        // Get current user
         const {
           data: { user: currentUser },
           error: userError,
@@ -35,18 +32,7 @@ export default function DashboardPage() {
           return;
         }
 
-        // Get session for token
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          setToken(session.access_token);
-        }
-
-        setUser(currentUser);
-
-        // Fetch user listings
-        const data = await api.get('/listings/user', { auth: true });
+        const data = await api.get("/listings/user", { auth: true });
         setListings(data || []);
       } catch (err) {
         console.error("Dashboard error:", err);
@@ -57,7 +43,7 @@ export default function DashboardPage() {
     };
 
     loadDashboard();
-  }, []);
+  }, [router]);
 
   if (loading) {
     return (
@@ -78,10 +64,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-zinc-900">Mon Dashboard</h1>
-          {/* <p className="mt-2 text-zinc-600">Gérez vos logements et votre profil</p> */}
         </div>
 
         {error && (
@@ -90,7 +74,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stats Section */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <StatCard
             label="Logements publiés"
@@ -112,7 +95,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Listings Section */}
         {hasListings ? (
           <DashboardCard title="Mes logements (aperçu)">
             <UserListingsCard listings={listings} isLoading={loading} />
@@ -130,7 +112,6 @@ export default function DashboardPage() {
           </DashboardCard>
         )}
 
-        {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <DashboardCard className="text-center">
             <a
@@ -153,4 +134,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
