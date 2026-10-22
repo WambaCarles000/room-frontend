@@ -217,10 +217,10 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-gray-950/50 to-gray-900/30 p-4">
-      <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-zinc-200 bg-white shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-gray-950/50 to-gray-900/30 p-2 sm:p-4">
+      <div className="flex max-h-[82dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg sm:max-h-[86dvh]">
         {/* Header */}
-        <div className="sticky top-0 border-b border-zinc-200 px-6 py-4 bg-white">
+        <div className="shrink-0 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-zinc-900">Modifier le logement</h2>
             <button
@@ -234,7 +234,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
               {error}
@@ -275,8 +275,8 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
               name="description"
               value={formData.description}
               onChange={handleChange}
-              rows={4}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              rows={5}
+              className="min-h-32 max-h-64 w-full resize-y rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm leading-6 text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
               placeholder="Décrivez les caractéristiques du logement..."
             />
             {fieldErrors.description && (
@@ -285,7 +285,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
 
           {/* Prix et Type */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-zinc-900 mb-1">
                 Prix(FCFA) *
@@ -391,7 +391,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
 
           {/* Ville et Quartier */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="city" className="block text-sm font-medium text-zinc-900 mb-1">
                 Ville *
@@ -429,7 +429,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
 
           {/* Surface et Caution */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="square_meters" className="block text-sm font-medium text-zinc-900 mb-1">
                 Surface (m²)
@@ -467,7 +467,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
 
           {/* Statut et Date de disponibilité */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-zinc-900 mb-1">
                 Statut
@@ -504,7 +504,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
 
           {/* Boutons */}
-          <div className="border-t border-zinc-200 pt-6 flex gap-3">
+          <div className="sticky bottom-0 -mx-4 -mb-4 flex flex-col-reverse gap-2 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:-mb-6 sm:flex-row sm:gap-3 sm:px-6 sm:py-4">
             <button
               type="button"
               onClick={onClose}

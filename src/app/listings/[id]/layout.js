@@ -1,6 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";
+const configuredSiteUrl =
+  (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001").trim();
+const SITE_URL = new URL(
+  /^https?:\/\//i.test(configuredSiteUrl)
+    ? configuredSiteUrl
+    : `https://${configuredSiteUrl}`
+).origin;
 
 export async function generateMetadata({ params }) {
   // In Next 16, params can be a Promise
@@ -63,14 +68,15 @@ export async function generateMetadata({ params }) {
     const descriptionCandidate = `${prefix}${rawDesc || "Découvrez ce logement sur Room."}`;
     const description = descriptionCandidate.slice(0, 160);
 
-    const url = `${SITE_URL}/listings/${id}`;
+    const url = new URL(`/listings/${id}`, SITE_URL).toString();
     const imageUrl =
       listing.images?.[0]?.imageUrl ||
-      `${SITE_URL}/default-listing-cover.png`;
+      new URL("/default-listing-cover.png", SITE_URL).toString();
 
     return {
       title,
       description,
+      metadataBase: new URL(SITE_URL),
       alternates: { canonical: url },
       openGraph: {
         title,
@@ -97,10 +103,12 @@ export async function generateMetadata({ params }) {
     return {
       title: "Logement - Room",
       description: "Découvrez ce logement sur Room.",
+      metadataBase: new URL(SITE_URL),
+      alternates: { canonical: new URL(`/listings/${id}`, SITE_URL).toString() },
       openGraph: {
         title: "Logement - Room",
         description: "Découvrez ce logement sur Room.",
-        url: `${SITE_URL}/listings/${id}`,
+        url: new URL(`/listings/${id}`, SITE_URL).toString(),
         type: "article",
       },
     };
