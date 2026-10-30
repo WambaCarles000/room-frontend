@@ -3,7 +3,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ClientLayoutWrapper } from "./ClientLayoutWrapper";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import DismissMobileDevOverlay from "@/components/DismissMobileDevOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,16 +23,18 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased pt-16`}
+        suppressHydrationWarning
       >
+        <DismissMobileDevOverlay />
         <Header />
         <ClientLayoutWrapper>
           {children}
           <Footer />
         </ClientLayoutWrapper>
-        <Analytics />
+        {process.env.NODE_ENV === "production" ? <Analytics /> : null}
       </body>
     </html>
   );

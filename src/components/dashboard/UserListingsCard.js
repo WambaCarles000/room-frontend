@@ -2,71 +2,99 @@
 
 import Link from "next/link";
 
+const statusStyles = {
+  available: { label: "Disponible", color: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700" },
+  rented: { label: "Loué", color: "bg-amber-500", badge: "bg-amber-50 text-amber-700" },
+  taken: { label: "Réservé", color: "bg-sky-500", badge: "bg-sky-50 text-sky-700" },
+  sold: { label: "Vendu", color: "bg-rose-500", badge: "bg-rose-50 text-rose-700" },
+};
+
+function formatPrice(price, currency = "XAF") {
+  const value = Number(price);
+  if (!Number.isFinite(value)) return null;
+
+  try {
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(value);
+  } catch {
+    return `${value} ${currency}`;
+  }
+}
+
 export default function UserListingsCard({ listings = [], isLoading = false }) {
   if (isLoading) {
-    return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-6">
-        <p className="text-sm text-zinc-500">Chargement...</p>
-      </div>
-    );
+    return <p className="py-4 text-sm text-zinc-500">Chargement...</p>;
   }
 
   if (!listings.length) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 text-center">
+      <div className="py-5 text-center">
         <p className="text-sm text-zinc-500">Aucun logement publié</p>
         <Link
           href="/listings"
-          className="mt-3 inline-block text-sm font-medium text-blue-600 hover:text-blue-700"
+          className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-700 hover:text-primary-800"
         >
-          Créer un logement →
+          Créer un logement
         </Link>
       </div>
     );
   }
 
-  const visibleListings = listings.slice(0, 5);
+  const visibleListings = listings.slice(0, 4);
 
   return (
-    <div className="space-y-3">
-      {visibleListings.map((listing) => (
-        <div
-          key={listing.id}
-          className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-4"
-        >
-          <div className="flex-1">
-            <p className="font-medium text-zinc-900">{listing.title}</p>
-            <p className="text-sm text-zinc-500">
-              {listing.city} • {listing.district}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="font-semibold text-zinc-900">{listing.price}€/mois</p>
-            <span
-              className={`text-xs font-medium px-2 py-1 rounded ${
-                listing.status === "available"
-                  ? "bg-green-100 text-green-800"
-                  : listing.status === "rented"
-                  ? "bg-orange-100 text-orange-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {listing.status === "available" ? "Disponible" : listing.status === "rented" ? "Loué" : "Vendu"}
-            </span>
-          </div>
-        </div>
-      ))}
+    <ul>
+      {visibleListings.map((listing) => {
+        const status = statusStyles[listing.status] || statusStyles.available;
+        const price = formatPrice(listing.price, listing.currency || "XAF");
+        const location = [listing.district, listing.city].filter(Boolean).join(", ");
 
-      {listings.length > 5 && (
-        <div className="pt-2 text-right">
+        return (
+          <li
+            key={listing.id}
+            className="border-b border-zinc-100 last:border-b-0"
+          >
+            <Link
+              href={`/listings/${listing.id}`}
+              className="group flex items-center justify-between gap-3 rounded-md py-3 transition hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            >
+              <div className="flex min-w-0 items-start gap-3">
+                <span className={`mt-2 h-2 w-2 shrink-0 rounded-full ${status.color}`} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-zinc-900 group-hover:text-primary-700">
+                    {listing.title}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-zinc-500">
+                    {location || "Emplacement non précisé"}
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-semibold text-zinc-900">
+                  {price || "Prix non précisé"}
+                </p>
+                <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${status.badge}`}>
+                  {status.label}
+                </span>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
+
+      {listings.length > 4 && (
+        <li className="pt-3 text-right">
           <Link
             href="/my-listings"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            className="text-sm font-medium text-primary-700 hover:text-primary-800"
           >
-            Voir tous mes logements →
+            Voir tous mes logements
           </Link>
-        </div>
+        </li>
       )}
-    </div>
+    </ul>
   );
 }

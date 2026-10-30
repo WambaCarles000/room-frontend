@@ -71,7 +71,7 @@ export default function ReportsPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-zinc-900 animate-spin mx-auto mb-4"></div>
+          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-primary-500 animate-spin mx-auto mb-4"></div>
           <p className="text-zinc-600">Chargement des reports...</p>
         </div>
       </div>

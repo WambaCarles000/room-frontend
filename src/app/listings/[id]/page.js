@@ -10,10 +10,7 @@ import ReportModal from "@/components/ReportModal";
 import ContactOwnerPanel from "@/components/ContactOwnerPanel";
 import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
-import { IoCheckmarkCircle } from "react-icons/io5";
 import { IoCalendar } from "react-icons/io5";
-import Popup from "@/components/popups";
-import { CiMoneyBill } from "react-icons/ci";
 import { formatMemberSince } from "@/lib/formatDate";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -80,7 +77,7 @@ export default function ListingDetailsPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500"></div>
       </div>
     );
   }
@@ -116,11 +113,35 @@ export default function ListingDetailsPage({ params }) {
 
   const pricePerMonth = parseFloat(listing.price).toLocaleString("fr-FR", {
     style: "currency",
-    currency: "XAF",
+    currency: listing.currency || "XAF",
+    maximumFractionDigits: 0,
   });
 
   const images = listing.images && listing.images.length > 0 ? listing.images : [];
   const hasImages = images.length > 0;
+  const statusMeta = {
+    available: { label: "Disponible", color: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700" },
+    rented: { label: "Loué", color: "bg-amber-500", badge: "bg-amber-50 text-amber-700" },
+    taken: { label: "Réservé", color: "bg-sky-500", badge: "bg-sky-50 text-sky-700" },
+    sold: { label: "Vendu", color: "bg-zinc-400", badge: "bg-zinc-100 text-zinc-700" },
+  }[listing.status] || { label: "Statut inconnu", color: "bg-zinc-400", badge: "bg-zinc-100 text-zinc-700" };
+  const characteristics = [
+    listing.square_meters && {
+      label: "Superficie",
+      value: `${listing.square_meters} m²`,
+      icon: <LuHouse aria-hidden="true" className="h-4 w-4" />,
+    },
+    listing.deposit_months && {
+      label: "Caution",
+      value: `${listing.deposit_months} mois`,
+      icon: <IoKeyOutline aria-hidden="true" className="h-4 w-4" />,
+    },
+    listing.availability_date && {
+      label: "Disponible à partir du",
+      value: new Date(listing.availability_date).toLocaleDateString("fr-FR"),
+      icon: <IoCalendar aria-hidden="true" className="h-4 w-4" />,
+    },
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100">
@@ -221,7 +242,12 @@ export default function ListingDetailsPage({ params }) {
               </div>
             )}
 
-            <div className="absolute right-3 top-3 z-10 flex gap-2">
+            <div className="absolute right-3 top-3 z-50 flex gap-2">
+              <ShareButton
+                listingId={id}
+                listingTitle={listing.title}
+                listingUrl={`${SITE_URL}/listings/${id}`}
+              />
               <FavoriteButton listingId={id} />
             </div>
           </div>
@@ -323,53 +349,57 @@ export default function ListingDetailsPage({ params }) {
 
       {/* Contenu principal */}
       <div className="mx-auto max-w-5xl px-4 py-12">
-
-        <div className="mb-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
-
-
-            <div className="flex-1">
-              <div className="inline-block rounded-full bg-gradient-to-r from-zinc-200 to-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-700 mb-4">
+        <section className="mb-8 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <span className="inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-800">
                 {listing.type === "studio"
-                  ? "🏠 Studio"
+                  ? "Studio"
                   : listing.type === "chambre"
-                    ? "🛏️ Chambre"
-                    : "🏢 Appartement"}
-              </div>
-
-              <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 mb-3">
+                    ? "Chambre"
+                    : "Appartement"}
+              </span>
+              <h1 className="mt-2 break-words text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">
                 {listing.title}
               </h1>
-
-              <div className="flex items-center gap-2 text-zinc-600 text-lg">
-                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <p className="mt-2 flex items-center gap-2 text-sm text-zinc-600">
+                <svg className="h-4 w-4 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path
                     fillRule="evenodd"
                     d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
                     clipRule="evenodd"
                   />
                 </svg>
-
-                <span>
-                  {listing.district}, {listing.city}
-                </span>
-              </div>
-            </div>
-
-            <div className="text-right sm:mt-0">
-              <p className="text-2xl font-bold text-zinc-900 flex items-center justify-end gap-2">
-                <CiMoneyBill />
-                {pricePerMonth}
-                <span className="text-zinc-400 text-base font-normal">/mois</span>
+                <span>{[listing.district, listing.city].filter(Boolean).join(", ") || "Lieu non précisé"}</span>
               </p>
             </div>
 
-
-
-
-
+            <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end sm:gap-1">
+              <p className="text-xl font-bold text-zinc-950 sm:text-2xl">
+                {pricePerMonth}
+                <span className="ml-1 text-sm font-normal text-zinc-500">/mois</span>
+              </p>
+              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusMeta.badge}`}>
+                <span className={`h-2 w-2 rounded-full ${statusMeta.color}`} />
+                {statusMeta.label}
+              </span>
+            </div>
           </div>
-        </div>
+
+          {characteristics.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-x-7 gap-y-3 border-t border-zinc-100 pt-4">
+              {characteristics.map((characteristic) => (
+                <div key={characteristic.label} className="flex items-center gap-2.5">
+                  <span className="text-zinc-500">{characteristic.icon}</span>
+                  <div>
+                    <p className="text-xs text-zinc-500">{characteristic.label}</p>
+                    <p className="text-sm font-semibold text-zinc-900">{characteristic.value}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Colonne principale */}
@@ -384,86 +414,7 @@ export default function ListingDetailsPage({ params }) {
               </p>
             </section>
 
-            {/* Caractéristiques */}
-            {(listing.square_meters || listing.deposit_months || listing.availability_date) && (
-              <section className="rounded-2xl border border-zinc-200 bg-white p-8">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                  Caractéristiques
-                </h2>
-                <div className="grid gap-6 sm:grid-cols-3">
-                  {listing.square_meters && (
-                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2 inline-block"><LuHouse className=" text-green-500" /></p>
-                      <p className="text-sm text-zinc-600 mb-1">Superficie</p>
-                      <p className="text-xl font-bold text-zinc-900">
-                        {listing.square_meters} m²
-                      </p>
-                    </div>
-                  )}
-                  {listing.deposit_months && (
-                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2 inline-block"><IoKeyOutline className=" text-green-500" /></p>
-                      <p className="text-sm text-zinc-600 mb-1">Caution</p>
-                      <p className="text-xl font-bold text-zinc-900">
-                        {listing.deposit_months} mois
-                      </p>
-                    </div>
-                  )}
-                  {listing.availability_date && (
-                    <div className="rounded-xl bg-zinc-50 p-6 text-center">
-                      <p className="text-4xl mb-2 inline-block"><IoCalendar className=" text-green-500" /></p>
-                      <p className="text-sm text-zinc-600 mb-1">Disponibilité</p>
-                      <p className="text-xl font-bold text-zinc-900">
-                        {new Date(listing.availability_date).toLocaleDateString("fr-FR")}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </section>
-            )}
-
-            {/* Status */}
-            <section className="rounded-2xl border border-zinc-200 bg-white p-8">
-              <h2 className="text-2xl font-bold text-zinc-900 mb-6">Statut</h2>
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-zinc-50">
-                {listing.status === "available" && (
-                  <>
-                    <div className="h-4 w-4 rounded-full bg-green-500 animate-pulse"></div>
-                    <div>
-                      <p className="font-semibold text-green-700">Disponible</p>
-                      <p className="text-sm text-green-600">Prêt à être loué dès maintenant</p>
-                    </div>
-                  </>
-                )}
-                {listing.status === "rented" && (
-                  <>
-                    <div className="h-4 w-4 rounded-full bg-yellow-500"></div>
-                    <div>
-                      <p className="font-semibold text-yellow-700">Loué</p>
-                      <p className="text-sm text-yellow-600">Actuellement occupé</p>
-                    </div>
-                  </>
-                )}
-                {listing.status === "sold" && (
-                  <>
-                    <div className="h-4 w-4 rounded-full bg-zinc-500"></div>
-                    <div>
-                      <p className="font-semibold text-zinc-700">Vendu</p>
-                      <p className="text-sm text-zinc-600">Non disponible</p>
-                    </div>
-                  </>
-                )}
-                {listing.status === "taken" && (
-                  <>
-                    <div className="h-4 w-4 rounded-full bg-orange-500"></div>
-                    <div>
-                      <p className="font-semibold text-orange-700">Réservé</p>
-                      <p className="text-sm text-orange-600">Actuellement réservé</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </section>
+            {/* Caractéristiques et Statut retirés */}
 
             {/* Galerie complète */}
             {/* {hasImages && images.length > 1 && (
@@ -579,28 +530,6 @@ export default function ListingDetailsPage({ params }) {
                 </div>
             </div>
 
-            {/* Partager */}
-            <div className="rounded-2xl border border-zinc-200 bg-white p-8">
-
-              <div className="flex gap-2 flex-col">
-
-                <ShareButton
-                  listingId={id}
-                  listingTitle={listing.title}
-                  listingUrl={`${SITE_URL}/listings/${id}`}
-                />
-
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    Popup("Lien copié avec succès", "success");
-                  }}
-                  className="w-full rounded-lg bg-zinc-100 px-4 py-2 text-center font-medium text-zinc-900 hover:bg-zinc-200 transition"
-                >
-                  Copier le lien
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 

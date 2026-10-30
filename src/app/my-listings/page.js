@@ -128,16 +128,13 @@ export default function MyListingsPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-semibold text-zinc-900">
                 Mes logements
               </h1>
-              <p className="mt-1 text-sm text-zinc-600">
-                Gérez les logements que vous avez publiés.
-              </p>
             </div>
           </div>
         </div>
@@ -170,10 +167,10 @@ export default function MyListingsPage() {
         </div>
       )}
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500" />
           </div>
         ) : error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">

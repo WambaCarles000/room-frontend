@@ -3,6 +3,7 @@
 "use client";
 
 import { useState } from "react";
+import ListingSearchBar from "@/components/ListingSearchBar";
 
 export default function ListingFilters({
   filters,
@@ -11,13 +12,14 @@ export default function ListingFilters({
   totalCount,
   showArchivedToggle = false,
   showHiddenToggle = false,
+  catalogStyle = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (search) => {
     onFiltersChange({
       ...filters,
-      search: e.target.value,
+      search,
     });
   };
 
@@ -56,7 +58,13 @@ export default function ListingFilters({
   const typeButtonClass = (type) =>
     filters.types?.includes(type)
       ? "bg-primary-500 text-white hover:bg-primary-600"
+      : catalogStyle
+      ? "bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
       : "border border-zinc-300 text-zinc-900 hover:border-primary-300";
+
+  const controlClass = catalogStyle
+    ? "rounded-full border-0 bg-zinc-100 text-zinc-900 hover:bg-zinc-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+    : "rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500";
 
   const hasActiveFilters =
     filters.search ||
@@ -67,44 +75,23 @@ export default function ListingFilters({
     filters.showHidden;
 
   return (
-    <div className="sticky top-16 z-30 border-b border-zinc-200 bg-white shadow-sm">
+    <div className={`sticky top-16 z-30 bg-white ${catalogStyle ? "" : "border-b border-zinc-200"}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Search Bar */}
-        <div className="py-4">
-          <div className="relative">
-            {/* Loupe : background primary-500, icône blanche */}
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center h-6 w-6 rounded-md bg-primary-500">
-              <svg
-                className="h-3.5 w-3.5 text-white"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2.5}
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Rechercher un logement..."
-              value={filters.search || ""}
-              onChange={handleSearchChange}
-              className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-11 pr-4 text-sm text-zinc-900 placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-            />
-          </div>
+        <div className={catalogStyle ? "py-2" : "py-3"}>
+          <ListingSearchBar
+            value={filters.search || ""}
+            onChange={handleSearchChange}
+          />
         </div>
 
         {/* ✅ Desktop Filters Bar - AVEC FLEX-WRAP */}
-        <div className="hidden lg:flex gap-3 border-t border-zinc-200 py-4 flex-wrap items-center">
+        <div className={`hidden lg:flex gap-3 flex-wrap items-center ${catalogStyle ? "pb-3" : "py-3"}`}>
           {/* Status Filter */}
           <select
             value={filters.status || ""}
             onChange={handleStatusChange}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 shrink-0"
+            className={`${controlClass} px-3 py-2 text-sm shrink-0`}
           >
             <option value="">Tous les statuts</option>
             <option value="available">Disponible</option>
@@ -119,7 +106,7 @@ export default function ListingFilters({
               <button
                 key={type}
                 onClick={() => handleTypeChange(type)}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
+                className={`rounded-full px-3 py-2 text-sm font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
@@ -132,7 +119,7 @@ export default function ListingFilters({
             placeholder="Prix max"
             value={filters.maxPrice || ""}
             onChange={handlePriceChange}
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 shrink-0"
+            className={`${controlClass} px-3 py-2 text-sm placeholder-zinc-500 shrink-0`}
           />
 
           {showArchivedToggle && (
@@ -175,7 +162,7 @@ export default function ListingFilters({
           {hasActiveFilters && (
             <button
               onClick={handleReset}
-              className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 transition shrink-0"
+              className={`rounded-full px-3 py-2 text-sm font-medium transition shrink-0 ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-50"}`}
             >
               Réinitialiser
             </button>
@@ -188,12 +175,12 @@ export default function ListingFilters({
         </div>
 
         {/* ✅ BREAKPOINT INTERMÉDIAIRE (sm à lg) - PLUS COMPACT */}
-        <div className="hidden sm:flex lg:hidden gap-2 border-t border-zinc-200 py-3 flex-wrap items-center">
+        <div className={`hidden sm:flex lg:hidden gap-2 flex-wrap items-center ${catalogStyle ? "pb-3" : "py-3"}`}>
           {/* Status Filter - Compact */}
           <select
             value={filters.status || ""}
             onChange={handleStatusChange}
-            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 shrink-0"
+            className={`${controlClass} px-2 py-1 text-xs shrink-0`}
           >
             <option value="">Statut</option>
             <option value="available">Disponible</option>
@@ -208,7 +195,7 @@ export default function ListingFilters({
               <button
                 key={type}
                 onClick={() => handleTypeChange(type)}
-                className={`rounded px-2 py-1 text-xs font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
+                className={`rounded-full px-2 py-1 text-xs font-medium transition whitespace-nowrap ${typeButtonClass(type)}`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
@@ -221,7 +208,7 @@ export default function ListingFilters({
             placeholder="Prix"
             value={filters.maxPrice || ""}
             onChange={handlePriceChange}
-            className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-600 font-medium placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-20 shrink-0"
+            className={`${controlClass} px-2 py-1 text-xs font-medium placeholder-zinc-500 w-20 shrink-0`}
           />
 
           {showArchivedToggle && (
@@ -264,7 +251,7 @@ export default function ListingFilters({
           {hasActiveFilters && (
             <button
               onClick={handleReset}
-              className="rounded border border-zinc-300 px-2 py-1 text-xs font-medium text-zinc-900 hover:bg-zinc-50 transition shrink-0"
+              className={`rounded-full px-2 py-1 text-xs font-medium transition shrink-0 ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-50"}`}
             >
               Réinitialiser
             </button>
@@ -277,10 +264,10 @@ export default function ListingFilters({
         </div>
 
         {/* Mobile Filters Toggle - Visible below sm */}
-        <div className="sm:hidden flex items-center justify-between border-t border-zinc-200 py-3">
+        <div className="sm:hidden flex items-center justify-between py-3">
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-900"
+            className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-zinc-900 ${catalogStyle ? "bg-zinc-100 hover:bg-zinc-200" : "border border-zinc-300"}`}
           >
             <svg
               className="h-4 w-4"
@@ -304,7 +291,7 @@ export default function ListingFilters({
 
         {/* Mobile Filters Drawer */}
         {isOpen && (
-          <div className="border-t border-zinc-200 bg-zinc-50 p-4 sm:hidden">
+          <div className="bg-zinc-50 p-4 sm:hidden">
             <div className="space-y-4">
               {/* Status Filter */}
               <div>
@@ -314,7 +301,7 @@ export default function ListingFilters({
                 <select
                   value={filters.status || ""}
                   onChange={handleStatusChange}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className={`w-full ${controlClass} px-3 py-2 text-sm`}
                 >
                   <option value="">Tous les statuts</option>
                   <option value="available">Disponible</option>
@@ -334,7 +321,7 @@ export default function ListingFilters({
                     <button
                       key={type}
                       onClick={() => handleTypeChange(type)}
-                      className={`rounded-lg px-3 py-2 text-sm font-medium transition text-left ${typeButtonClass(type)}`}
+                      className={`rounded-full px-3 py-2 text-sm font-medium transition text-left ${typeButtonClass(type)}`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </button>
@@ -388,7 +375,7 @@ export default function ListingFilters({
                   placeholder="Prix max"
                   value={filters.maxPrice || ""}
                   onChange={handlePriceChange}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder-zinc-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className={`w-full ${controlClass} px-3 py-2 text-sm placeholder-zinc-500`}
                 />
               </div>
 
@@ -396,7 +383,7 @@ export default function ListingFilters({
               {hasActiveFilters && (
                 <button
                   onClick={handleReset}
-                  className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-100 transition"
+                  className={`w-full rounded-full px-3 py-2 text-sm font-medium transition ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-100"}`}
                 >
                   Réinitialiser
                 </button>

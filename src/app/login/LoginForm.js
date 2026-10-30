@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { LuHouse, LuLockKeyhole, LuLogIn, LuMail } from "react-icons/lu";
 
 function LoginForm() {
 
@@ -55,6 +56,9 @@ async function onSubmit(e) {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-950">
       <main className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-16">
+        <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-700">
+          <LuHouse aria-hidden="true" className="h-6 w-6" />
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Connexion</h1>
         <p className="mt-2 text-sm text-zinc-600">
           Pas encore de compte ?{" "}
@@ -71,7 +75,8 @@ async function onSubmit(e) {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900">
+            <label className="mb-1 flex items-center gap-2 text-sm font-medium text-zinc-900">
+              <LuMail aria-hidden="true" className="h-4 w-4 text-primary-600" />
               Email
             </label>
             <input
@@ -79,13 +84,16 @@ async function onSubmit(e) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
+              suppressHydrationWarning
               className="mt-1 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
               placeholder="exemple@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-900">
+            <label className="flex items-center gap-2 text-sm font-medium text-zinc-900">
+              <LuLockKeyhole aria-hidden="true" className="h-4 w-4 text-primary-600" />
               Mot de passe
             </label>
             <div className="relative mt-1">
@@ -94,6 +102,8 @@ async function onSubmit(e) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
+                suppressHydrationWarning
                 className="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-10 text-sm outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
                 placeholder="••••••••"
               />
@@ -123,9 +133,19 @@ async function onSubmit(e) {
           <button
             type="submit"
             disabled={loading}
-            className="mt-6 w-full rounded-lg bg-primary-500 px-4 py-2 font-medium text-white hover:bg-primary-600 disabled:opacity-50 transition"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary-500 px-4 py-2 font-medium text-white transition hover:bg-primary-600 disabled:opacity-50"
           >
-            {loading ? "Connexion..." : "Se connecter"}
+            {loading ? (
+              <>
+                <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                Connexion...
+              </>
+            ) : (
+              <>
+                <LuLogIn aria-hidden="true" className="h-4 w-4" />
+                Se connecter
+              </>
+            )}
           </button>
         </form>
 

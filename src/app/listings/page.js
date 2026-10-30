@@ -135,11 +135,11 @@ export default function ListingsPage() {
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <div className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
                 Découvrez les logements
               </h1>
               <p className="mt-1 text-sm text-zinc-600">
@@ -175,6 +175,7 @@ export default function ListingsPage() {
       <ListingFilters
         filters={filters}
         onFiltersChange={setFilters}
+        catalogStyle
         onReset={() =>
           setFilters({ search: "", status: "", types: [], maxPrice: null })
         }
@@ -234,7 +235,7 @@ export default function ListingsPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500"></div>
           </div>
         ) : error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">

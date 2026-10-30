@@ -175,7 +175,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
 
           {fetching ? (
             <div className="flex items-center justify-center p-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-900" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500" />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

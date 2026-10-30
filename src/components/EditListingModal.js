@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { z } from "zod";
 import api from "@/lib/api";
 import { toInputDate } from "@/lib/formatDate";
@@ -43,6 +44,28 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   );
   const [newImages, setNewImages] = useState([]);
   const [imagesValidationError, setImagesValidationError] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   useEffect(() => {
     setFormData({
@@ -214,16 +237,29 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-gray-950/50 to-gray-900/30 p-2 sm:p-4">
-      <div className="flex max-h-[82dvh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg sm:max-h-[86dvh]">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] overflow-hidden">
+      <div
+        className="absolute inset-0 bg-gradient-to-b from-gray-950/50 to-gray-900/30"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="flex h-full items-start justify-center p-2 sm:items-center sm:p-4">
+        <div
+          className="relative flex max-h-[calc(100dvh-1rem)] w-full min-w-0 max-w-2xl flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-lg sm:max-h-[min(90dvh,900px)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-listing-title"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="shrink-0 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-zinc-900">Modifier le logement</h2>
+            <h2 id="edit-listing-title" className="text-xl font-bold text-zinc-900">Modifier le logement</h2>
             <button
+              type="button"
               onClick={onClose}
               className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
             >
@@ -234,7 +270,8 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4 sm:p-6">
+        <form onSubmit={handleSubmit} className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="min-h-0 min-w-0 flex-1 space-y-5 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
               {error}
@@ -485,26 +522,40 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
                 <option value="sold">Vendu</option>
               </select>
             </div>
-            <div>
+            <div className="min-w-0">
               <label htmlFor="availability_date" className="block text-sm font-medium text-zinc-900 mb-1">
                 Date de disponibilité
               </label>
-              <input
-                id="availability_date"
-                name="availability_date"
-                type="date"
-                value={formData.availability_date ?? ""}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-              />
+              <div className="relative min-w-0">
+                <input
+                  id="availability_date"
+                  name="availability_date"
+                  type="date"
+                  value={formData.availability_date ?? ""}
+                  onChange={handleChange}
+                  className="block w-full min-w-0 max-w-full appearance-none rounded-lg border border-zinc-300 bg-white px-4 py-2 pr-12 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 md:appearance-auto"
+                />
+                <svg
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500 md:hidden"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <rect x="3.5" y="5" width="17" height="16" rx="2" />
+                  <path d="M16 3v4M8 3v4M3.5 10h17" />
+                </svg>
+              </div>
               {fieldErrors.availability_date && (
                 <p className="mt-1 text-xs text-red-600">{fieldErrors.availability_date}</p>
               )}
             </div>
           </div>
 
+        </div>
           {/* Boutons */}
-          <div className="sticky bottom-0 -mx-4 -mb-4 flex flex-col-reverse gap-2 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:-mb-6 sm:flex-row sm:gap-3 sm:px-6 sm:py-4">
+          <div className="shrink-0 flex flex-col-reverse gap-2 border-t border-zinc-200 bg-white px-4 py-3 sm:flex-row sm:gap-3 sm:px-6 sm:py-4">
             <button
               type="button"
               onClick={onClose}
@@ -521,7 +572,9 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
