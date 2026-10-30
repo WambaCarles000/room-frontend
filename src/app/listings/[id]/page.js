@@ -14,7 +14,7 @@ import { IoCalendar } from "react-icons/io5";
 import { formatMemberSince } from "@/lib/formatDate";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 export default function ListingDetailsPage({ params }) {
   const { id } = use(params);
   const [listing, setListing] = useState(null);

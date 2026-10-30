@@ -55,7 +55,8 @@ const SHARE_PLATFORMS = [
 export default function ShareButton({ listingId, listingTitle, listingUrl }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const shareUrl = listingUrl || `${process.env.NEXT_PUBLIC_SITE_URL}/listings/${listingId}`;
+  const rawShareUrl = listingUrl || `${process.env.NEXT_PUBLIC_SITE_URL || ""}/listings/${listingId}`;
+  const shareUrl = rawShareUrl.trim().replace(/\s+/g, "");
   const shareTitle = listingTitle || "Découvrez ce logement";
   const shareMessage = `${shareTitle} - Room`;
 
