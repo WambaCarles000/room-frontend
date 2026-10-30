@@ -162,7 +162,7 @@ export default function ListingFilters({
           {hasActiveFilters && (
             <button
               onClick={handleReset}
-              className={`rounded-full px-3 py-2 text-sm font-medium transition shrink-0 ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-50"}`}
+              className={`rounded-full px-3 py-2 text-sm font-medium transition shrink-0 text-red-600 hover:bg-red-50 hover:text-red-700 ${catalogStyle ? "" : "border border-zinc-300"}`}
             >
               Réinitialiser
             </button>
@@ -251,7 +251,7 @@ export default function ListingFilters({
           {hasActiveFilters && (
             <button
               onClick={handleReset}
-              className={`rounded-full px-2 py-1 text-xs font-medium transition shrink-0 ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-50"}`}
+              className={`rounded-full px-2 py-1 text-xs font-medium transition shrink-0 text-red-600 hover:bg-red-50 hover:text-red-700 ${catalogStyle ? "" : "border border-zinc-300"}`}
             >
               Réinitialiser
             </button>
@@ -383,7 +383,7 @@ export default function ListingFilters({
               {hasActiveFilters && (
                 <button
                   onClick={handleReset}
-                  className={`w-full rounded-full px-3 py-2 text-sm font-medium transition ${catalogStyle ? "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900" : "border border-zinc-300 text-zinc-900 hover:bg-zinc-100"}`}
+                  className={`w-full rounded-full px-3 py-2 text-sm font-medium transition text-red-600 hover:bg-red-50 hover:text-red-700 ${catalogStyle ? "" : "border border-zinc-300"}`}
                 >
                   Réinitialiser
                 </button>

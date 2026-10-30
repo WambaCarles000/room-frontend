@@ -230,7 +230,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-700">
             Titre *
@@ -279,7 +279,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-700">
             Prix *
@@ -371,7 +371,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-zinc-700">
             Superficie (m²)
@@ -401,16 +401,31 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           />
         </div>
 
-        <div>
+        <div className="min-w-0">
           <label className="mb-1 block text-sm font-medium text-zinc-700">
             Date de disponibilité
           </label>
-          <input
-            type="date"
-            value={formData.availability_date}
-            onChange={(e) => setFormData({ ...formData, availability_date: e.target.value })}
-            className="h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200"
-          />
+          <div className="relative min-w-0">
+            <input
+              id="create_availability_date"
+              name="availability_date"
+              type="date"
+              value={formData.availability_date}
+              onChange={(e) => setFormData({ ...formData, availability_date: e.target.value })}
+              className="block h-10 w-full min-w-0 max-w-full appearance-none rounded-lg border border-zinc-300 bg-white px-3 py-2 pr-12 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-2 focus:ring-zinc-200 md:appearance-auto"
+            />
+            <svg
+              aria-hidden="true"
+              className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-500 md:hidden"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
+              <rect x="3.5" y="5" width="17" height="16" rx="2" />
+              <path d="M16 3v4M8 3v4M3.5 10h17" />
+            </svg>
+          </div>
         </div>
       </div>
 

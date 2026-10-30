@@ -25,6 +25,23 @@ export default function ListingsPage() {
   });
 
   useEffect(() => {
+    if (!showForm) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setShowForm(false);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showForm]);
+
+  useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
@@ -148,7 +165,7 @@ export default function ListingsPage() {
             </div>
             {user && (
               <button
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => setShowForm(true)}
                 className="inline-flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white hover:bg-primary-600 transition"
               >
                 <svg
@@ -184,29 +201,6 @@ export default function ListingsPage() {
 
       {/* Main Content */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Formulaire de création */}
-        {showForm && user && (
-          <div className="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-zinc-900">
-                Ajouter un nouveau logement
-              </h2>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-zinc-500 hover:text-zinc-700"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <CreateListingForm
-              onSuccess={handleCreateSuccess}
-              onCancel={() => setShowForm(false)}
-            />
-          </div>
-        )}
-
         {/* Message si non connecté */}
         {!user && !showForm && (
           <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
@@ -278,6 +272,49 @@ export default function ListingsPage() {
           </div>
         )}
       </div>
+
+      {showForm && user && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/50 p-0 backdrop-blur-sm sm:p-4"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setShowForm(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-listing-title"
+            className="flex h-dvh w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[90dvh] sm:max-w-3xl sm:rounded-xl sm:border sm:border-zinc-200"
+          >
+            <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-4 py-4 sm:px-6">
+              <div>
+                <h2 id="create-listing-title" className="text-lg font-semibold text-zinc-950">
+                  Ajouter un logement
+                </h2>
+                <p className="mt-0.5 text-sm text-zinc-500">
+                  Renseignez les informations de votre annonce.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                aria-label="Fermer le formulaire"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </header>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+              <CreateListingForm
+                onSuccess={handleCreateSuccess}
+                onCancel={() => setShowForm(false)}
+              />
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

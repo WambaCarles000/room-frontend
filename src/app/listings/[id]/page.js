@@ -129,16 +129,19 @@ export default function ListingDetailsPage({ params }) {
     listing.square_meters && {
       label: "Superficie",
       value: `${listing.square_meters} m²`,
+      iconStyle: "bg-sky-50 text-sky-700",
       icon: <LuHouse aria-hidden="true" className="h-4 w-4" />,
     },
     listing.deposit_months && {
       label: "Caution",
       value: `${listing.deposit_months} mois`,
+      iconStyle: "bg-amber-50 text-amber-700",
       icon: <IoKeyOutline aria-hidden="true" className="h-4 w-4" />,
     },
     listing.availability_date && {
       label: "Disponible à partir du",
       value: new Date(listing.availability_date).toLocaleDateString("fr-FR"),
+      iconStyle: "bg-emerald-50 text-emerald-700",
       icon: <IoCalendar aria-hidden="true" className="h-4 w-4" />,
     },
   ].filter(Boolean);
@@ -390,7 +393,9 @@ export default function ListingDetailsPage({ params }) {
             <div className="mt-5 flex flex-wrap gap-x-7 gap-y-3 border-t border-zinc-100 pt-4">
               {characteristics.map((characteristic) => (
                 <div key={characteristic.label} className="flex items-center gap-2.5">
-                  <span className="text-zinc-500">{characteristic.icon}</span>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${characteristic.iconStyle}`}>
+                    {characteristic.icon}
+                  </span>
                   <div>
                     <p className="text-xs text-zinc-500">{characteristic.label}</p>
                     <p className="text-sm font-semibold text-zinc-900">{characteristic.value}</p>
