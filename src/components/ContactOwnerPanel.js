@@ -33,6 +33,7 @@ export default function ContactOwnerPanel({
     owner?.first_name?.charAt(0)?.toUpperCase() ||
     owner?.email?.charAt(0)?.toUpperCase() ||
     "?";
+  const ownerPhoto = owner?.avatar_url;
 
   function handleRevealContact() {
     if (CONTACTS_UNLOCKED) {
@@ -42,18 +43,24 @@ export default function ContactOwnerPanel({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-purple-500 text-2xl font-bold text-white shadow-lg">
-          {ownerInitial}
+    <div className="space-y-5">
+      <div className="flex items-center gap-4 border-b border-zinc-200 pb-5">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-2xl font-semibold text-primary-800 ring-4 ring-primary-50">
+          {ownerPhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={ownerPhoto} alt={ownerLabel} className="h-full w-full object-cover" />
+          ) : (
+            ownerInitial
+          )}
         </div>
-        <div>
-          <p className="text-lg font-semibold text-zinc-900">{ownerLabel}</p>
-          <p className="text-sm text-zinc-600">Propriétaire</p>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary-700">Bailleur Room</p>
+          <p className="mt-1 break-words text-xl font-semibold text-zinc-950">{ownerLabel}</p>
+          <p className="mt-1 text-sm text-zinc-600">Propriétaire du logement</p>
         </div>
       </div>
 
-      <div className="space-y-2 border-t border-zinc-200 pt-4">
+      <div className="space-y-3">
         {!user ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
             <p className="font-medium">Connectez-vous pour contacter le propriétaire</p>

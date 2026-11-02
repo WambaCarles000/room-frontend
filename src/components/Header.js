@@ -5,6 +5,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
+import {
+  IoGridOutline,
+  IoHeartOutline,
+  IoHomeOutline,
+  IoLogInOutline,
+  IoLogOutOutline,
+  IoPersonAddOutline,
+  IoSearchOutline,
+  IoSettingsOutline,
+} from "react-icons/io5";
 
 const PUBLIC_NAV = [{ href: "/listings", label: "Logements" }];
 
@@ -12,6 +22,13 @@ const AUTH_NAV = [
   { href: "/favorites", label: "Favoris" },
   { href: "/dashboard", label: "Dashboard" },
 ];
+
+const MOBILE_NAV_ICONS = {
+  "/listings": IoSearchOutline,
+  "/favorites": IoHeartOutline,
+  "/dashboard": IoGridOutline,
+  "/my-listings": IoHomeOutline,
+};
 
 export default function Header() {
   const [user, setUser] = useState(null);
@@ -78,16 +95,19 @@ export default function Header() {
   };
 
   const getMobileLinkClasses = (href) => {
-    const base = "block rounded-lg px-3 py-2.5 text-sm font-medium transition";
+    const base = "inline-flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition";
     return isActive(href)
       ? `${base} bg-primary-500 text-white`
       : `${base} text-zinc-800 hover:bg-primary-50 hover:text-primary-700`;
   };
 
+  const getMobileIconClasses = (href) =>
+    `h-5 w-5 shrink-0 ${isActive(href) ? "text-white" : "text-primary-700"}`;
+
   const navLinks = user ? [...PUBLIC_NAV, ...AUTH_NAV] : PUBLIC_NAV;
 
   return (
-    <header className="fixed top-0 inset-x-0 z-40 border-b border-zinc-200 bg-white/95 backdrop-blur">
+    <header className="fixed top-0 inset-x-0 z-[60] border-b border-zinc-200 bg-white/95 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group" onClick={closeMenus}>
@@ -133,41 +153,46 @@ export default function Header() {
                     <div className="p-2">
                       <Link
                         href="/dashboard"
-                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={closeMenus}
                       >
-                        Mon Dashboard
+                        <IoGridOutline className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        <span>Mon Dashboard</span>
                       </Link>
                       <Link
                         href="/listings"
-                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={closeMenus}
                       >
-                        Trouver un logement
+                        <IoSearchOutline className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        <span>Trouver un logement</span>
                       </Link>
                       <Link
                         href="/my-listings"
-                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={closeMenus}
                       >
-                        Mes logements
+                        <IoHomeOutline className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        <span>Mes logements</span>
                       </Link>
                       <Link
                         href="/favorites"
-                        className="block px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
+                        className="flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={closeMenus}
                       >
-                        Mes favoris
+                        <IoHeartOutline className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        <span>Mes favoris</span>
                       </Link>
                       <button
                         type="button"
-                        className="block w-full px-4 py-2 rounded-lg text-sm text-zinc-900 hover:bg-zinc-100 transition text-left"
+                        className="flex w-full items-center gap-3 px-4 py-2 rounded-lg text-left text-sm text-zinc-900 hover:bg-zinc-100 transition"
                         onClick={() => {
                           closeMenus();
                           setIsSettingsOpen(true);
                         }}
                       >
-                        Paramètres
+                        <IoSettingsOutline className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        <span>Paramètres</span>
                       </button>
                     </div>
 
@@ -175,9 +200,10 @@ export default function Header() {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="w-full px-4 py-2 rounded-lg text-sm text-red-600 hover:bg-red-50 transition font-medium"
+                        className="flex w-full items-center gap-3 px-4 py-2 rounded-lg text-left text-sm text-red-600 hover:bg-red-50 transition font-medium"
                       >
-                        Se déconnecter
+                        <IoLogOutOutline className="h-4 w-4" aria-hidden="true" />
+                        <span>Se déconnecter</span>
                       </button>
                     </div>
                   </div>
@@ -240,7 +266,11 @@ export default function Header() {
             {navLinks.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className={getMobileLinkClasses(item.href)} onClick={closeMenus}>
-                  {item.label}
+                  {(() => {
+                    const Icon = MOBILE_NAV_ICONS[item.href];
+                    return <Icon className={getMobileIconClasses(item.href)} aria-hidden="true" />;
+                  })()}
+                  <span>{item.label}</span>
                 </Link>
               </li>
             ))}
@@ -248,19 +278,21 @@ export default function Header() {
               <>
                 <li>
                   <Link href="/my-listings" className={getMobileLinkClasses("/my-listings")} onClick={closeMenus}>
-                    Mes logements
+                    <IoHomeOutline className={getMobileIconClasses("/my-listings")} aria-hidden="true" />
+                    <span>Mes logements</span>
                   </Link>
                 </li>
                 <li>
                   <button
                     type="button"
-                    className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-800 hover:bg-primary-50 hover:text-primary-700"
+                    className="inline-flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-zinc-800 hover:bg-primary-50 hover:text-primary-700"
                     onClick={() => {
                       closeMenus();
                       setIsSettingsOpen(true);
                     }}
                   >
-                    Paramètres
+                    <IoSettingsOutline className="h-5 w-5 shrink-0 text-primary-700" aria-hidden="true" />
+                    <span>Paramètres</span>
                   </button>
                 </li>
               </>
@@ -272,24 +304,27 @@ export default function Header() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                className="inline-flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
               >
-                Se déconnecter
+                <IoLogOutOutline className="h-5 w-5 shrink-0" aria-hidden="true" />
+                <span>Se déconnecter</span>
               </button>
             ) : (
               <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="rounded-lg border border-zinc-200 px-4 py-2.5 text-center text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-zinc-200 px-4 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
                   onClick={closeMenus}
                 >
+                  <IoLogInOutline className="h-5 w-5 text-primary-700" aria-hidden="true" />
                   Connexion
                 </Link>
                 <Link
                   href="/signup"
-                  className="rounded-lg bg-primary-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-600"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-600"
                   onClick={closeMenus}
                 >
+                  <IoPersonAddOutline className="h-5 w-5" aria-hidden="true" />
                   S&apos;inscrire
                 </Link>
               </div>

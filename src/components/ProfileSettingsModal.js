@@ -18,7 +18,10 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
     last_name: "",
     email: "",
     phone: "",
+    avatar_url: "",
   });
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState(null);
@@ -28,6 +31,12 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -60,7 +69,10 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
             profile?.last_name || supaUser?.user_metadata?.last_name || "",
           email: profile?.email || supaUser?.email || "",
           phone: profile?.phone || supaUser?.phone || "",
+          avatar_url: profile?.avatar_url || "",
         });
+        setAvatarFile(null);
+        setAvatarPreview(null);
       } catch (err) {
         if (!cancelled) setError(err?.message || "Impossible de charger le profil.");
       } finally {
@@ -78,6 +90,22 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Choisissez un fichier image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError("La photo doit faire 5 Mo maximum.");
+      return;
+    }
+    setError(null);
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarFile(file);
   };
 
   const handleSubmit = async (e) => {
@@ -100,18 +128,46 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
     }
 
     try {
-      const updatedUser = await api.patch("/users/me", result.data, { auth: true });
+      const supabase = createClient();
+      const {
+        data: { user: supaUser },
+      } = await supabase.auth.getUser();
+      if (!supaUser) throw new Error("Vous devez être connecté pour modifier votre profil.");
+
+      let avatarUrl = formData.avatar_url || null;
+      if (avatarFile) {
+        const extension = avatarFile.type.split("/")[1]?.replace("jpeg", "jpg") || "jpg";
+        const avatarPath = `profiles/${supaUser.id}/avatar.${extension}`;
+        const { error: uploadError } = await supabase.storage
+          .from("listings")
+          .upload(avatarPath, avatarFile, {
+            cacheControl: "0",
+            contentType: avatarFile.type,
+            upsert: true,
+          });
+
+        if (uploadError) throw new Error("Impossible d'envoyer la photo de profil.");
+
+        const { data } = supabase.storage.from("listings").getPublicUrl(avatarPath);
+        avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+      }
+
+      const updatedUser = await api.patch(
+        "/users/me",
+        { ...result.data, avatar_url: avatarUrl },
+        { auth: true }
+      );
 
       if (!updatedUser?.id) {
         throw new Error("Réponse invalide du serveur.");
       }
 
-      const supabase = createClient();
       const { error: supabaseError } = await supabase.auth.updateUser({
         data: {
           first_name: updatedUser.first_name,
           last_name: updatedUser.last_name,
           phone: updatedUser.phone,
+          avatar_url: updatedUser.avatar_url,
         },
       });
 
@@ -124,6 +180,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
         last_name: updatedUser.last_name || "",
         email: updatedUser.email || formData.email,
         phone: updatedUser.phone || "",
+        avatar_url: updatedUser.avatar_url || "",
       });
 
       setSuccess(true);
@@ -189,6 +246,34 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
                   Profil mis à jour
                 </div>
               )}
+
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-xl font-semibold text-primary-800 ring-4 ring-primary-50">
+                  {avatarPreview || formData.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={avatarPreview || formData.avatar_url}
+                      alt="Photo de profil"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    formData.first_name?.charAt(0)?.toUpperCase() || "?"
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <label htmlFor="settings_avatar" className="block text-sm font-medium text-zinc-900">
+                    Photo de profil
+                  </label>
+                  <input
+                    id="settings_avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="mt-1 block w-full text-sm text-zinc-600 file:mr-3 file:rounded-md file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:font-medium file:text-primary-700 hover:file:bg-primary-100"
+                  />
+                  <p className="mt-1 text-xs text-zinc-500">Image de 5 Mo maximum</p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

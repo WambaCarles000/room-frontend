@@ -76,7 +76,7 @@ export default function ListingFilters({
 
   return (
     <div className={`sticky top-16 z-30 bg-white ${catalogStyle ? "" : "border-b border-zinc-200"}`}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className={`mx-auto ${catalogStyle ? "max-w-[1600px]" : "max-w-7xl"} px-4 sm:px-6 lg:px-8`}>
         {/* Search Bar */}
         <div className={catalogStyle ? "py-2" : "py-3"}>
           <ListingSearchBar

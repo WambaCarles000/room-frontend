@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import api from "@/lib/api";
 import { createClient } from "@/lib/supabase/browser";
@@ -44,6 +44,15 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
   const [fieldErrors, setFieldErrors] = useState({});
   const [imagesValidationError, setImagesValidationError] = useState(null);
 
+  const imagePreviews = useMemo(
+    () => images.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    [images]
+  );
+
+  useEffect(() => {
+    return () => imagePreviews.forEach(({ url }) => URL.revokeObjectURL(url));
+  }, [imagePreviews]);
+
   const formatBytes = (bytes) => {
     if (!bytes || bytes <= 0) return "0 B";
     const units = ["B", "KB", "MB", "GB"];
@@ -55,6 +64,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
   const handleImagesChange = (e) => {
     setImagesValidationError(null);
     const files = Array.from(e.target.files || []);
+    e.target.value = "";
     if (!files.length) return;
 
     const accepted = [];
@@ -352,6 +362,25 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
             {images.length} image{images.length > 1 ? "s" : ""} sélectionnée
             {images.length > 1 ? "s" : ""}.
           </p>
+        )}
+        {imagePreviews.length > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {imagePreviews.map(({ file, url }) => (
+              <div key={url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="Aperçu du logement" className="h-20 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImages((current) => current.filter((image) => image !== file))}
+                  className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                  title="Retirer"
+                  aria-label="Retirer cette photo"
+                >
+                  Retirer
+                </button>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

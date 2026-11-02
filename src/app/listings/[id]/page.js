@@ -10,7 +10,13 @@ import ReportModal from "@/components/ReportModal";
 import ContactOwnerPanel from "@/components/ContactOwnerPanel";
 import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
-import { IoCalendar } from "react-icons/io5";
+import {
+  IoBookmarkOutline,
+  IoCalendar,
+  IoCheckmarkCircleOutline,
+  IoFlagOutline,
+  IoHomeOutline,
+} from "react-icons/io5";
 import { formatMemberSince } from "@/lib/formatDate";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -129,19 +135,19 @@ export default function ListingDetailsPage({ params }) {
     listing.square_meters && {
       label: "Superficie",
       value: `${listing.square_meters} m²`,
-      iconStyle: "bg-sky-50 text-sky-700",
+      iconStyle: "bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100",
       icon: <LuHouse aria-hidden="true" className="h-4 w-4" />,
     },
     listing.deposit_months && {
       label: "Caution",
       value: `${listing.deposit_months} mois`,
-      iconStyle: "bg-amber-50 text-amber-700",
+      iconStyle: "bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100",
       icon: <IoKeyOutline aria-hidden="true" className="h-4 w-4" />,
     },
     listing.availability_date && {
       label: "Disponible à partir du",
       value: new Date(listing.availability_date).toLocaleDateString("fr-FR"),
-      iconStyle: "bg-emerald-50 text-emerald-700",
+      iconStyle: "bg-primary-50 text-primary-700 ring-1 ring-inset ring-primary-100",
       icon: <IoCalendar aria-hidden="true" className="h-4 w-4" />,
     },
   ].filter(Boolean);
@@ -290,20 +296,19 @@ export default function ListingDetailsPage({ params }) {
             }}
           >
             <div className="relative w-full sm:max-w-6xl">
-              <button
-                type="button"
-                onClick={() => setIsLightboxOpen(false)}
-                className="absolute -top-12 right-0 text-white/90 hover:text-white text-sm font-semibold"
-              >
-                Fermer (Esc)
-              </button>
-
               {/* overflow-hidden retiré pour que les boutons -left-14 / -right-14 soient visibles */}
               <div className="relative sm:rounded-2xl bg-black sm:shadow-2xl sm:border sm:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(false)}
+                  className="absolute right-3 top-3 z-20 rounded-full bg-black/70 px-4 py-2 text-sm font-semibold text-white shadow-lg transition hover:bg-black/90 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black"
+                >
+                  Fermer (Esc)
+                </button>
                 <img
                   src={images[currentImageIndex]?.imageUrl}
                   alt={listing.title}
-                  className="w-full h-full sm:h-auto sm:max-h-[80vh] object-cover sm:object-contain bg-black sm:rounded-2xl"
+                  className="w-full h-full sm:h-auto sm:max-h-[calc(100dvh-6rem)] object-cover sm:object-contain bg-black sm:rounded-2xl"
                 />
 
                 {images.length > 1 && (
@@ -393,7 +398,7 @@ export default function ListingDetailsPage({ params }) {
             <div className="mt-5 flex flex-wrap gap-x-7 gap-y-3 border-t border-zinc-100 pt-4">
               {characteristics.map((characteristic) => (
                 <div key={characteristic.label} className="flex items-center gap-2.5">
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${characteristic.iconStyle}`}>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${characteristic.iconStyle}`}>
                     {characteristic.icon}
                   </span>
                   <div>
@@ -460,9 +465,9 @@ export default function ListingDetailsPage({ params }) {
                 onReportClick={() => setShowReportModal(true)}
               />
 
-                <div className="mt-4 rounded-xl bg-zinc-50 border border-zinc-200 p-4 text-sm space-y-3">
-                  <p className="text-xs font-bold tracking-wide  text-center text-zinc-900 ">
-                    Activité
+                <div className="mt-6 space-y-4 border-t border-zinc-200 pt-5 text-sm">
+                  <p className="text-sm font-semibold text-zinc-900">
+                    Activité sur Room
                   </p>
 
                   {(() => {
@@ -476,55 +481,60 @@ export default function ListingDetailsPage({ params }) {
 
                     return (
                       <>
-                        {/* Grid responsive : 2 cols sur mobile, 4 sur lg+ */}
-                        <div className="grid grid-cols-2 lg:grid-cols-2 gap-2 text-center">
-                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                        <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-zinc-200 text-center">
+                          <div className="flex flex-col items-center justify-center border-b border-r border-zinc-200 bg-zinc-50/70 p-3">
                             <p className="text-lg font-bold text-zinc-900">
                               {available}
                             </p>
-                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                            <p className="mt-1 flex items-center gap-1 text-xs leading-tight text-zinc-600">
+                              <IoCheckmarkCircleOutline className="h-3.5 w-3.5 text-primary-600" aria-hidden="true" />
                               Disponibles
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                          <div className="flex flex-col items-center justify-center border-b border-zinc-200 bg-zinc-50/70 p-3">
                             <p className="text-lg font-bold text-zinc-900">
                               {rented}
                             </p>
-                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                            <p className="mt-1 flex items-center gap-1 text-xs leading-tight text-zinc-600">
+                              <IoKeyOutline className="h-3.5 w-3.5 text-primary-600" aria-hidden="true" />
                               Loués
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                          <div className="flex flex-col items-center justify-center border-r border-zinc-200 bg-zinc-50/70 p-3">
                             <p className="text-lg font-bold text-zinc-900">
                               {taken}
                             </p>
-                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                            <p className="mt-1 flex items-center gap-1 text-xs leading-tight text-zinc-600">
+                              <IoBookmarkOutline className="h-3.5 w-3.5 text-primary-600" aria-hidden="true" />
                               Réservés
                             </p>
                           </div>
-                          <div className="rounded-lg bg-white border border-zinc-200 p-3 flex flex-col items-center justify-center">
+                          <div className="flex flex-col items-center justify-center bg-zinc-50/70 p-3">
                             <p className="text-lg font-bold text-zinc-900">
                               {sold}
                             </p>
-                            <p className="text-xs text-zinc-600 leading-tight mt-1">
+                            <p className="mt-1 flex items-center gap-1 text-xs leading-tight text-zinc-600">
+                              <IoHomeOutline className="h-3.5 w-3.5 text-primary-600" aria-hidden="true" />
                               Vendus
                             </p>
                           </div>
                         </div>
 
                         {/* Footer avec infos complémentaires */}
-                        <div className="space-y-2 pt-2 border-t border-zinc-200">
+                        <div className="space-y-3 pt-1">
                           {memberSince && (
-                            <p className="flex items-center justify-center gap-1.5 text-xs text-zinc-600">
-                              <IoCalendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                              {memberSince}
+                            <p className="flex items-center gap-2 text-xs text-zinc-600">
+                              <IoCalendar className="h-4 w-4 shrink-0 text-primary-600" aria-hidden="true" />
+                              Membre depuis {memberSince}
                             </p>
                           )}
-                          <div className="flex items-center justify-between text-xs text-zinc-600">
-                            <span className="font-medium">
+                          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-200 pt-3 text-xs text-zinc-600">
+                            <span className="inline-flex items-center gap-1.5">
+                              <LuHouse className="h-3.5 w-3.5 text-primary-600" aria-hidden="true" />
                               {total} logement{total !== 1 ? "s" : ""} au total
                             </span>
-                            <span className={`font-medium ${reports > 0 ? "text-red-600" : ""}`}>
+                            <span className={`inline-flex items-center gap-1.5 ${reports > 0 ? "font-medium text-red-600" : ""}`}>
+                              <IoFlagOutline className="h-3.5 w-3.5" aria-hidden="true" />
                               {reports} signalement{reports !== 1 ? "s" : ""}
                             </span>
                           </div>
