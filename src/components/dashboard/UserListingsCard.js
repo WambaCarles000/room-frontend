@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import RoomLoader from "@/components/RoomLoader";
 
 const statusStyles = {
   available: { label: "Disponible", color: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-700" },
@@ -26,7 +27,11 @@ function formatPrice(price, currency = "XAF") {
 
 export default function UserListingsCard({ listings = [], isLoading = false }) {
   if (isLoading) {
-    return <p className="py-4 text-sm text-zinc-500">Chargement...</p>;
+    return (
+      <div className="flex justify-center py-4">
+        <RoomLoader size="sm" label="Chargement des logements" />
+      </div>
+    );
   }
 
   if (!listings.length) {

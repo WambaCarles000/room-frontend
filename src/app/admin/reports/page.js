@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import RoomLoader from "@/components/RoomLoader";
 
 export default function ReportsPage() {
   const [reports, setReports] = useState([]);
@@ -70,10 +71,7 @@ export default function ReportsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-primary-500 animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600">Chargement des reports...</p>
-        </div>
+        <RoomLoader size="lg" label="Chargement des signalements" />
       </div>
     );
   }

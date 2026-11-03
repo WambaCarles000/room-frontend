@@ -7,6 +7,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
 import PhoneNumberField from "@/components/PhoneNumberField";
+import RoomLoader from "@/components/RoomLoader";
 
 const settingsSchema = z.object({
   first_name: z.string().min(2, "Le prénom doit faire au moins 2 caractères"),
@@ -239,7 +240,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
 
           {fetching ? (
             <div className="flex items-center justify-center p-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500" />
+              <RoomLoader size="md" label="Chargement du profil" />
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="p-6 space-y-4">

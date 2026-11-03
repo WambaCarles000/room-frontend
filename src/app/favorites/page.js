@@ -5,8 +5,11 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import Link from "next/link";
 import ListingCardV2 from "@/components/ListingCardV2";
+import ListingGrid from "@/components/ListingGrid";
 import api from "@/lib/api";
 import ListingFilters from "@/components/ListingFilters";
+import ListingPagination, { LISTING_PAGE_SIZE } from "@/components/ListingPagination";
+import RoomLoader from "@/components/RoomLoader";
 
 export default function FavoritesPage() {
   const [allFavorites, setAllFavorites] = useState([]); // ✅ Tous les favoris
@@ -14,11 +17,13 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     types: [],
     maxPrice: null,
+    spaces: [],
   });
 
   // ✅ STEP 1 : Récupérer l'utilisateur et charger les favoris UNE FOIS
@@ -77,6 +82,12 @@ export default function FavoritesPage() {
       );
     }
 
+    if (filters.spaces?.length) {
+      result = result.filter((favorite) =>
+        filters.spaces.every((space) => favorite.listing?.spaces?.[space])
+      );
+    }
+
     // Filtre de prix
     if (filters.maxPrice) {
       result = result.filter((favorite) =>
@@ -92,13 +103,20 @@ export default function FavoritesPage() {
     applyFilters(allFavorites);
   }, [filters, applyFilters]); // ✅ Dépendances correctes
 
+  function handleFiltersChange(nextFilters) {
+    setFilters(nextFilters);
+    setCurrentPage(1);
+  }
+
+  const paginatedFavorites = filteredFavorites.slice(
+    (currentPage - 1) * LISTING_PAGE_SIZE,
+    currentPage * LISTING_PAGE_SIZE
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-primary-500 animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600">Chargement des favoris...</p>
-        </div>
+        <RoomLoader size="lg" label="Chargement des favoris" />
       </div>
     );
   }
@@ -152,7 +170,7 @@ export default function FavoritesPage() {
         </div>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-[1600px] px-4 py-12 sm:px-6 lg:px-8">
         {/* En-tête */}
         <div className="mb-12">
           {/* <h1 className="text-3xl font-bold text-zinc-900 mb-2">Mes favoris</h1> */}
@@ -160,15 +178,18 @@ export default function FavoritesPage() {
         {allFavorites.length > 0 && (
           <ListingFilters
             filters={filters}
-            onFiltersChange={setFilters}
-            onReset={() =>
+            onFiltersChange={handleFiltersChange}
+            wide
+            onReset={() => {
               setFilters({
                 search: "",
                 status: "",
                 types: [],
                 maxPrice: null,
+                spaces: [],
               })
-            }
+              setCurrentPage(1);
+            }}
             totalCount={filteredFavorites.length}
           />
         )}
@@ -239,9 +260,10 @@ export default function FavoritesPage() {
               Aucun favori ne correspond à votre recherche
             </p>
             <button
-              onClick={() =>
-                setFilters({ search: "", status: "", types: [], maxPrice: null })
-              }
+              onClick={() => {
+                setFilters({ search: "", status: "", types: [], maxPrice: null, spaces: [] })
+                setCurrentPage(1);
+              }}
               className="inline-block px-6 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition"
             >
               Réinitialiser les filtres
@@ -249,14 +271,22 @@ export default function FavoritesPage() {
           </div>
         ) : (
           // ✅ AFFICHER LES FAVORIS FILTRÉS
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredFavorites.map((favorite) => (
-              <ListingCardV2
-                key={favorite.id}
-                listing={favorite.listing}
-              />
-            ))}
-          </div>
+          <>
+            <ListingGrid>
+              {paginatedFavorites.map((favorite) => (
+                <ListingCardV2
+                  key={favorite.id}
+                  listing={favorite.listing}
+                />
+              ))}
+            </ListingGrid>
+            <ListingPagination
+              currentPage={currentPage}
+              totalItems={filteredFavorites.length}
+              onPageChange={setCurrentPage}
+              label="Pagination des favoris"
+            />
+          </>
         )}
       </div>
     </main>

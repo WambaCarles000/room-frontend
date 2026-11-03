@@ -1,11 +1,12 @@
 import { Suspense } from "react";
+import RoomLoader from "@/components/RoomLoader";
 import LoginForm from "./LoginForm";
 
 export const dynamic = "force-dynamic";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-50 flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500"></div></div>}>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-50"><RoomLoader size="md" /></div>}>
       <LoginForm />
     </Suspense>
   );

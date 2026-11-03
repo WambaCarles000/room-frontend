@@ -6,6 +6,10 @@ import { z } from "zod";
 import api from "@/lib/api";
 import { toInputDate } from "@/lib/formatDate";
 import { createClient } from "@/lib/supabase/browser";
+import { listingSpacesSchema } from "@/lib/listingSpaces";
+import ListingSpacesField from "@/components/ListingSpacesField";
+import ListingPhotoRoomSelect from "@/components/ListingPhotoRoomSelect";
+import { getListingPhotoRoom, LISTING_PHOTO_ROOMS } from "@/lib/listingPhotoRooms";
 
 const listingSchema = z.object({
   title: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
@@ -19,12 +23,14 @@ const listingSchema = z.object({
   square_meters: z.coerce.number().positive().optional().nullable(),
   deposit_months: z.coerce.number().int().min(0).optional().nullable(),
   availability_date: z.string().optional().nullable(),
+  spaces: listingSpacesSchema.optional(),
 });
 
 export default function EditListingModal({ listing, isOpen, onClose, onSuccess }) {
   // console.log(listing.availability_date);
   const [formData, setFormData] = useState({
     ...listing,
+    spaces: listing.spaces || {},
     availability_date: listing.availability_date ? toInputDate(listing.availability_date) : "",
    
   });
@@ -39,8 +45,14 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   const MAX_UPLOAD_BYTES = 1 * 1024 * 1024; // ~1Mo après compression
   const MAX_INPUT_BYTES = 7 * 1024 * 1024; // ~7Mo max par fichier (avant optimisation)
 
-  const [keptImageUrls, setKeptImageUrls] = useState(() =>
-    (listing?.images || []).map((img) => img?.imageUrl).filter(Boolean)
+  const [keptImages, setKeptImages] = useState(() =>
+    (listing?.images || [])
+      .filter((image) => image?.imageUrl)
+      .map((image) => ({
+        id: image.id || image.imageUrl,
+        imageUrl: image.imageUrl,
+        room: image.room || "general",
+      }))
   );
   const [newImages, setNewImages] = useState([]);
   const [imagesValidationError, setImagesValidationError] = useState(null);
@@ -70,9 +82,18 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   useEffect(() => {
     setFormData({
       ...listing,
+      spaces: listing?.spaces || {},
       availability_date: listing?.availability_date ? toInputDate(listing.availability_date) : "",
     });
-    setKeptImageUrls((listing?.images || []).map((img) => img?.imageUrl).filter(Boolean));
+    setKeptImages(
+      (listing?.images || [])
+        .filter((image) => image?.imageUrl)
+        .map((image) => ({
+          id: image.id || image.imageUrl,
+          imageUrl: image.imageUrl,
+          room: image.room || "general",
+        }))
+    );
     setNewImages([]);
     setImagesValidationError(null);
     setError(null);
@@ -80,7 +101,7 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
     setFieldErrors({});
   }, [listing]);
 
-  const existingCount = keptImageUrls.length;
+  const existingCount = keptImages.length;
   const remainingSlots = Math.max(MAX_IMAGES - existingCount, 0);
 
   const formatBytes = (bytes) => {
@@ -92,11 +113,20 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   };
 
   const newImagePreviews = useMemo(() => {
-    return newImages.map((f) => ({
-      file: f,
-      url: URL.createObjectURL(f),
+    return newImages.map((image) => ({
+      ...image,
+      url: URL.createObjectURL(image.file),
     }));
   }, [newImages]);
+
+  const keptImageGroups = LISTING_PHOTO_ROOMS.map((room) => ({
+    ...room,
+    images: keptImages.filter((image) => getListingPhotoRoom(image.room).id === room.id),
+  })).filter((room) => room.images.length > 0);
+  const newImageGroups = LISTING_PHOTO_ROOMS.map((room) => ({
+    ...room,
+    images: newImagePreviews.filter((image) => getListingPhotoRoom(image.room).id === room.id),
+  })).filter((room) => room.images.length > 0);
 
   useEffect(() => {
     return () => {
@@ -122,14 +152,19 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
       else accepted.push(f);
     }
 
-    const next = [...newImages, ...accepted].slice(0, remainingSlots);
+    const addedImages = accepted.map((file) => ({
+      id: crypto.randomUUID(),
+      file,
+      room: "general",
+    }));
+    const next = [...newImages, ...addedImages].slice(0, remainingSlots);
     setNewImages(next);
 
     if (rejected.length > 0) {
       setImagesValidationError(
         `${rejected.length} image(s) ignorée(s) car elles dépassent ${formatBytes(MAX_INPUT_BYTES)}.`
       );
-    } else if (accepted.length > 0 && next.length < newImages.length + accepted.length) {
+    } else if (accepted.length > 0 && next.length < newImages.length + addedImages.length) {
       setImagesValidationError(`Limite atteinte: maximum ${MAX_IMAGES} photos par logement.`);
     }
   };
@@ -137,11 +172,12 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
   async function uploadImagesToSupabase(listingId, files) {
     if (!files?.length) return [];
     const supabase = createClient();
-    const uploadedUrls = [];
+    const uploadedImages = [];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const fileName = `${Date.now()}-${i}.webp`;
+      const image = files[i];
+      const file = image.file;
+      const fileName = `${image.id}.webp`;
       const path = `listings/${listingId}/${fileName}`;
 
       let optimizedBlob = null;
@@ -183,10 +219,12 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
       if (uploadError) continue;
 
       const { data } = supabase.storage.from("listings").getPublicUrl(path);
-      if (data?.publicUrl) uploadedUrls.push(data.publicUrl);
+      if (data?.publicUrl) {
+        uploadedImages.push({ imageUrl: data.publicUrl, room: image.room });
+      }
     }
 
-    return uploadedUrls;
+    return uploadedImages;
   }
 
   const handleSubmit = async (e) => {
@@ -218,11 +256,18 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
     try {
       await api.patch(`/listings/${listing.id}`, result.data, { auth: true });
 
-      const hasImageChanges = newImages.length > 0 || keptImageUrls.length !== (listing?.images || []).length;
+      const originalImages = listing?.images || [];
+      const hasImageChanges =
+        newImages.length > 0 ||
+        keptImages.length !== originalImages.length ||
+        keptImages.some((image, index) =>
+          image.imageUrl !== originalImages[index]?.imageUrl ||
+          image.room !== (originalImages[index]?.room || "general")
+        );
       if (hasImageChanges) {
         const uploaded = await uploadImagesToSupabase(listing.id, newImages);
-        const nextUrls = [...keptImageUrls, ...uploaded].slice(0, MAX_IMAGES);
-        await api.patch(`/listings/${listing.id}/images`, { images: nextUrls }, { auth: true });
+        const nextImages = [...keptImages, ...uploaded].slice(0, MAX_IMAGES);
+        await api.patch(`/listings/${listing.id}/images`, { images: nextImages }, { auth: true });
       }
 
       setSuccess(true);
@@ -368,22 +413,47 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
               Maximum {MAX_IMAGES} photos. Vous pouvez retirer des photos existantes et en ajouter de nouvelles.
             </p>
 
-            {keptImageUrls.length > 0 && (
-              <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {keptImageUrls.map((url) => (
-                  <div key={url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="h-20 w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setKeptImageUrls((prev) => prev.filter((u) => u !== url))}
-                      className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
-                      title="Retirer"
-                    >
-                      Retirer
-                    </button>
-                  </div>
-                ))}
+            {keptImages.length > 0 && (
+              <div className="mt-4 space-y-4">
+                {keptImageGroups.map((group) => {
+                  const Icon = group.icon;
+                  return (
+                    <section key={group.id}>
+                      <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-700">
+                        <Icon className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                        {group.label}
+                        <span className="font-normal text-zinc-500">{group.images.length}</span>
+                      </h3>
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {group.images.map((image, index) => (
+                          <div key={image.id} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                            <div className="relative">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={image.imageUrl} alt={`${group.label}, photo ${index + 1}`} className="h-24 w-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={() => setKeptImages((previous) => previous.filter((item) => item.id !== image.id))}
+                                className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                                title="Retirer"
+                              >
+                                Retirer
+                              </button>
+                            </div>
+                            <div className="p-1.5">
+                              <ListingPhotoRoomSelect
+                                value={image.room}
+                                photoName={`kept-${image.id}`}
+                                onChange={(room) => setKeptImages((previous) => previous.map((item) => (
+                                  item.id === image.id ? { ...item, room } : item
+                                )))}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
               </div>
             )}
 
@@ -407,21 +477,46 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
               )}
 
               {newImagePreviews.length > 0 && (
-                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {newImagePreviews.map((p) => (
-                    <div key={p.url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={p.url} alt="" className="h-20 w-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => setNewImages((prev) => prev.filter((f) => f !== p.file))}
-                        className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
-                        title="Retirer"
-                      >
-                        Retirer
-                      </button>
-                    </div>
-                  ))}
+                <div className="mt-4 space-y-4">
+                  {newImageGroups.map((group) => {
+                    const Icon = group.icon;
+                    return (
+                      <section key={group.id}>
+                        <h3 className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-700">
+                          <Icon className="h-4 w-4 text-primary-700" aria-hidden="true" />
+                          {group.label}
+                          <span className="font-normal text-zinc-500">{group.images.length}</span>
+                        </h3>
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                          {group.images.map((image, index) => (
+                            <div key={image.id} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                              <div className="relative">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={image.url} alt={`Nouvelle photo ${group.label} ${index + 1}`} className="h-24 w-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setNewImages((previous) => previous.filter((item) => item.id !== image.id))}
+                                  className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                                  title="Retirer"
+                                >
+                                  Retirer
+                                </button>
+                              </div>
+                              <div className="p-1.5">
+                                <ListingPhotoRoomSelect
+                                  value={image.room}
+                                  photoName={`new-${image.id}`}
+                                  onChange={(room) => setNewImages((previous) => previous.map((item) => (
+                                    item.id === image.id ? { ...item, room } : item
+                                  )))}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -502,6 +597,11 @@ export default function EditListingModal({ listing, isOpen, onClose, onSuccess }
               )}
             </div>
           </div>
+
+          <ListingSpacesField
+            value={formData.spaces}
+            onChange={(spaces) => setFormData((previous) => ({ ...previous, spaces }))}
+          />
 
           {/* Statut et Date de disponibilité */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -4,6 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import api from "@/lib/api";
 import { createClient } from "@/lib/supabase/browser";
+import { listingSpacesSchema } from "@/lib/listingSpaces";
+import ListingSpacesField from "@/components/ListingSpacesField";
+import ListingPhotoRoomSelect from "@/components/ListingPhotoRoomSelect";
 
 
 const MAX_IMAGES = 10;
@@ -11,6 +14,13 @@ const MAX_IMAGE_DIMENSION = 1600; // évite d'envoyer des images trop lourdes
 const WEBP_QUALITY = 0.78; // compromis qualité / poids
 const MAX_UPLOAD_BYTES = 1 * 1024 * 1024; // ~1Mo par image apres compression(idealement)
 const MAX_INPUT_BYTES = 7 * 1024 * 1024; // ~7Mo max par fichier (avant optimisation)
+
+function createImageId() {
+  const randomUUID = globalThis.crypto?.randomUUID;
+  return typeof randomUUID === "function"
+    ? randomUUID.call(globalThis.crypto)
+    : `image-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
 
 const listingSchema = z.object({
   title: z.string().min(5, "Le titre doit faire au moins 5 caractères"),
@@ -23,6 +33,7 @@ const listingSchema = z.object({
   square_meters: z.coerce.number().positive().optional().nullable(),
   deposit_months: z.coerce.number().int().min(0).optional().nullable(),
   availability_date: z.string().optional().nullable(),
+  spaces: listingSpacesSchema.optional(),
 });
 
 export default function CreateListingForm({ onSuccess, onCancel }) {
@@ -37,6 +48,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     square_meters: "",
     deposit_months: "",
     availability_date: "",
+    spaces: {},
   });
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -45,7 +57,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
   const [imagesValidationError, setImagesValidationError] = useState(null);
 
   const imagePreviews = useMemo(
-    () => images.map((file) => ({ file, url: URL.createObjectURL(file) })),
+    () => images.map((image) => ({ ...image, url: URL.createObjectURL(image.file) })),
     [images]
   );
 
@@ -75,14 +87,19 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
       else accepted.push(f);
     }
 
-    const next = [...images, ...accepted].slice(0, MAX_IMAGES);
+    const newImages = accepted.map((file) => ({
+      id: createImageId(),
+      file,
+      room: "general",
+    }));
+    const next = [...images, ...newImages].slice(0, MAX_IMAGES);
     setImages(next);
 
     if (rejected.length > 0) {
       setImagesValidationError(
         `${rejected.length} image(s) ignorée(s) car elles dépassent ${formatBytes(MAX_INPUT_BYTES)}.`
       );
-    } else if (accepted.length > 0 && next.length < images.length + accepted.length) {
+    } else if (accepted.length > 0 && next.length < images.length + newImages.length) {
       setImagesValidationError(`Limite atteinte: maximum ${MAX_IMAGES} images.`);
     }
   };
@@ -94,8 +111,9 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
     const uploadedUrls = [];
 
     for (let i = 0; i < images.length; i++) {
-      const file = images[i];
-      const fileName = `${Date.now()}-${i}.webp`;
+      const image = images[i];
+      const file = image.file;
+      const fileName = `${image.id}.webp`;
       const path = `listings/${listingId}/${fileName}`;
 
       // Optimisation côté navigateur avant upload:
@@ -149,7 +167,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
 
       const { data } = supabase.storage.from("listings").getPublicUrl(path);
       if (data?.publicUrl) {
-        uploadedUrls.push(data.publicUrl);
+        uploadedUrls.push({ imageUrl: data.publicUrl, room: image.room });
       }
     }
 
@@ -207,11 +225,11 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
       const newListing = await api.post("/listings", result.data, { auth: true });
 
       if (newListing?.id) {
-        const imageUrls = await uploadImagesToSupabase(newListing.id);
-        if (imageUrls.length) {
+        const uploadedImages = await uploadImagesToSupabase(newListing.id);
+        if (uploadedImages.length) {
           await api.post(
             `/listings/${newListing.id}/images`,
-            { images: imageUrls },
+            { images: uploadedImages },
             { auth: true }
           );
         }
@@ -228,6 +246,7 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         square_meters: "",
         deposit_months: "",
         availability_date: "",
+        spaces: {},
       });
       setImages([]);
       onSuccess?.();
@@ -365,19 +384,30 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
         )}
         {imagePreviews.length > 0 && (
           <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
-            {imagePreviews.map(({ file, url }) => (
-              <div key={url} className="relative overflow-hidden rounded-lg border border-zinc-200 bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt="Aperçu du logement" className="h-20 w-full object-cover" />
-                <button
-                  type="button"
-                  onClick={() => setImages((current) => current.filter((image) => image !== file))}
-                  className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
-                  title="Retirer"
-                  aria-label="Retirer cette photo"
-                >
-                  Retirer
-                </button>
+            {imagePreviews.map(({ id, file, room, url }, index) => (
+              <div key={id} className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+                <div className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Aperçu photo ${index + 1}`} className="h-24 w-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImages((current) => current.filter((image) => image.file !== file))}
+                    className="absolute right-1 top-1 rounded-md bg-white/90 px-2 py-1 text-xs font-medium text-zinc-700 hover:bg-white"
+                    title="Retirer"
+                    aria-label="Retirer cette photo"
+                  >
+                    Retirer
+                  </button>
+                </div>
+                <div className="p-1.5">
+                  <ListingPhotoRoomSelect
+                    value={room}
+                    photoName={`create-${id}`}
+                    onChange={(nextRoom) => setImages((current) => current.map((image) => (
+                      image.id === id ? { ...image, room: nextRoom } : image
+                    )))}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -457,6 +487,11 @@ export default function CreateListingForm({ onSuccess, onCancel }) {
           </div>
         </div>
       </div>
+
+      <ListingSpacesField
+        value={formData.spaces}
+        onChange={(spaces) => setFormData((previous) => ({ ...previous, spaces }))}
+      />
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">

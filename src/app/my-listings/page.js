@@ -2,9 +2,12 @@
 
 import { useEffect, useState, useCallback } from "react";
 import ListingCardV2 from "@/components/ListingCardV2";
+import ListingGrid from "@/components/ListingGrid";
 import ListingFilters from "@/components/ListingFilters";
+import ListingPagination, { LISTING_PAGE_SIZE } from "@/components/ListingPagination";
 import EditListingModal from "@/components/EditListingModal";
 import api from "@/lib/api";
+import RoomLoader from "@/components/RoomLoader";
 
 export default function MyListingsPage() {
   const [allListings, setAllListings] = useState([]);
@@ -13,11 +16,13 @@ export default function MyListingsPage() {
   const [error, setError] = useState(null);
   const [editingListing, setEditingListing] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     types: [],
     maxPrice: null,
+    spaces: [],
     showArchived: false,
     showHidden: false,
   });
@@ -63,6 +68,12 @@ export default function MyListingsPage() {
         result = result.filter((listing) => filters.types.includes(listing.type));
       }
 
+      if (filters.spaces?.length) {
+        result = result.filter((listing) =>
+          filters.spaces.every((space) => listing.spaces?.[space])
+        );
+      }
+
       if (filters.maxPrice) {
         result = result.filter((listing) => listing.price <= filters.maxPrice);
       }
@@ -87,6 +98,21 @@ export default function MyListingsPage() {
   useEffect(() => {
     applyFilters(allListings);
   }, [allListings, filters, applyFilters]);
+
+  function handleFiltersChange(nextFilters) {
+    setFilters(nextFilters);
+    setCurrentPage(1);
+  }
+
+  const totalPages = Math.ceil(filteredListings.length / LISTING_PAGE_SIZE);
+  const paginatedListings = filteredListings.slice(
+    (currentPage - 1) * LISTING_PAGE_SIZE,
+    currentPage * LISTING_PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, Math.max(totalPages, 1)));
+  }, [totalPages]);
 
   const handleOpenEditModal = (listing) => {
     setEditingListing(listing);
@@ -129,7 +155,7 @@ export default function MyListingsPage() {
   return (
     <div className="min-h-screen bg-zinc-50">
       <div className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+        <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-zinc-900">
@@ -143,17 +169,20 @@ export default function MyListingsPage() {
       {/* Filtres */}
       <ListingFilters
         filters={filters}
-        onFiltersChange={setFilters}
-        onReset={() =>
+        onFiltersChange={handleFiltersChange}
+        wide
+        onReset={() => {
           setFilters({
             search: "",
             status: "",
             types: [],
             maxPrice: null,
+            spaces: [],
             showArchived: false,
             showHidden: false,
           })
-        }
+          setCurrentPage(1);
+        }}
         totalCount={filteredListings.length}
         showArchivedToggle
         showHiddenToggle
@@ -167,10 +196,10 @@ export default function MyListingsPage() {
         </div>
       )}
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500" />
+            <RoomLoader size="md" label="Chargement de vos logements" />
           </div>
         ) : error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
@@ -187,22 +216,30 @@ export default function MyListingsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredListings.map((listing) => (
-              <ListingCardV2
-                key={listing.id}
-                listing={listing}
-                isOwner
-                showManageActions
-                isArchived={!!listing.archived_at}
-                isInactive={!listing.is_active && !listing.archived_at}
-                onEditClick={() => handleOpenEditModal(listing)}
-                onArchiveClick={
-                  listing.status === "sold" ? undefined : () => handleArchiveToggle(listing)
-                }
-              />
-            ))}
-          </div>
+          <>
+            <ListingGrid>
+              {paginatedListings.map((listing) => (
+                <ListingCardV2
+                  key={listing.id}
+                  listing={listing}
+                  isOwner
+                  showManageActions
+                  isArchived={!!listing.archived_at}
+                  isInactive={!listing.is_active && !listing.archived_at}
+                  onEditClick={() => handleOpenEditModal(listing)}
+                  onArchiveClick={
+                    listing.status === "sold" ? undefined : () => handleArchiveToggle(listing)
+                  }
+                />
+              ))}
+            </ListingGrid>
+            <ListingPagination
+              currentPage={currentPage}
+              totalItems={filteredListings.length}
+              onPageChange={setCurrentPage}
+              label="Pagination de mes logements"
+            />
+          </>
         )}
       </main>
 

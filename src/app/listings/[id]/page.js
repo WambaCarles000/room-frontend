@@ -8,6 +8,8 @@ import FavoriteButton from "@/components/FavoriteButton";
 import ShareButton from "@/components/ShareButton";
 import ReportModal from "@/components/ReportModal";
 import ContactOwnerPanel from "@/components/ContactOwnerPanel";
+import ListingSpacesSummary from "@/components/ListingSpacesSummary";
+import RoomLoader from "@/components/RoomLoader";
 import { LuHouse } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
 import {
@@ -83,7 +85,7 @@ export default function ListingDetailsPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500"></div>
+        <RoomLoader size="md" label="Chargement du logement" />
       </div>
     );
   }
@@ -202,13 +204,12 @@ export default function ListingDetailsPage({ params }) {
                   );
                 })}
 
-                <button
-                  type="button"
-                  onClick={() => setIsLightboxOpen(true)}
+                <Link
+                  href={`/listings/${id}/photos`}
                   className="absolute bottom-3 right-3 z-10 rounded-full bg-white/90 px-4 py-2 text-xs font-semibold text-zinc-900 shadow-lg hover:bg-white"
                 >
                   Voir toutes les photos
-                </button>
+                </Link>
 
                 {images.length > 1 && (
                   <>
@@ -409,6 +410,8 @@ export default function ListingDetailsPage({ params }) {
               ))}
             </div>
           )}
+
+          <ListingSpacesSummary spaces={listing.spaces} />
         </section>
 
         <div className="grid gap-8 lg:grid-cols-3">

@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import ListingSearchBar from "@/components/ListingSearchBar";
+import ListingSpacesFilter from "@/components/ListingSpacesFilter";
 
 export default function ListingFilters({
   filters,
@@ -13,6 +14,7 @@ export default function ListingFilters({
   showArchivedToggle = false,
   showHiddenToggle = false,
   catalogStyle = false,
+  wide = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -50,6 +52,10 @@ export default function ListingFilters({
     });
   };
 
+  const handleSpacesChange = (spaces) => {
+    onFiltersChange({ ...filters, spaces });
+  };
+
   const handleReset = () => {
     onReset();
     setIsOpen(false);
@@ -70,13 +76,14 @@ export default function ListingFilters({
     filters.search ||
     filters.status ||
     (filters.types && filters.types.length > 0) ||
+    (filters.spaces && filters.spaces.length > 0) ||
     filters.maxPrice ||
     filters.showArchived ||
     filters.showHidden;
 
   return (
     <div className={`sticky top-16 z-30 ${catalogStyle ? "border-b border-zinc-200 bg-white/95 shadow-sm backdrop-blur" : "bg-white border-b border-zinc-200"}`}>
-      <div className={`mx-auto ${catalogStyle ? "max-w-[1600px]" : "max-w-7xl"} px-4 sm:px-6 lg:px-8`}>
+      <div className={`mx-auto ${catalogStyle || wide ? "max-w-[1600px]" : "max-w-7xl"} px-4 sm:px-6 lg:px-8`}>
         <div className={catalogStyle ? "py-3 xl:grid xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.45fr)] xl:items-center xl:gap-5" : "py-3"}>
           <ListingSearchBar
             value={filters.search || ""}
@@ -119,6 +126,8 @@ export default function ListingFilters({
             onChange={handlePriceChange}
             className={`${controlClass} px-3 py-2 text-sm placeholder-zinc-500 shrink-0`}
           />
+
+          <ListingSpacesFilter value={filters.spaces || []} onChange={handleSpacesChange} />
 
           {showArchivedToggle && (
             <label className="flex items-center gap-2 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-700 shrink-0 cursor-pointer">
@@ -209,6 +218,8 @@ export default function ListingFilters({
             onChange={handlePriceChange}
             className={`${controlClass} px-2 py-1 text-xs font-medium placeholder-zinc-500 w-20 shrink-0`}
           />
+
+          <ListingSpacesFilter value={filters.spaces || []} onChange={handleSpacesChange} />
 
           {showArchivedToggle && (
             <label className="flex items-center gap-1 rounded border border-zinc-300 px-2 py-1 text-xs text-zinc-700 shrink-0 cursor-pointer">
@@ -377,6 +388,12 @@ export default function ListingFilters({
                   className={`w-full ${controlClass} px-3 py-2 text-sm placeholder-zinc-500`}
                 />
               </div>
+
+              <ListingSpacesFilter
+                value={filters.spaces || []}
+                onChange={handleSpacesChange}
+                fullWidth
+              />
 
               {/* Reset Button */}
               {hasActiveFilters && (

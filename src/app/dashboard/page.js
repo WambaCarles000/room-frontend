@@ -11,6 +11,7 @@ import api from "@/lib/api";
 import { LuArrowUpRight, LuHouse, LuPlus } from "react-icons/lu";
 import { IoKeyOutline } from "react-icons/io5";
 import { IoCheckmarkCircle } from "react-icons/io5";
+import RoomLoader from "@/components/RoomLoader";
 
 const listingStatuses = [
   { key: "available", label: "Disponibles", color: "bg-emerald-500" },
@@ -56,10 +57,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-        <div className="text-center">
-          <div className="h-12 w-12 rounded-full border-4 border-zinc-200 border-t-primary-500 animate-spin mx-auto mb-4"></div>
-          <p className="text-zinc-600">Chargement du dashboard...</p>
-        </div>
+        <RoomLoader size="lg" label="Chargement du dashboard" />
       </div>
     );
   }

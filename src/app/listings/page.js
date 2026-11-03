@@ -4,8 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import CreateListingForm from "@/components/CreateListingForm";
 import ListingCardV2 from "@/components/ListingCardV2";
+import ListingGrid from "@/components/ListingGrid";
 import ListingFilters from "@/components/ListingFilters";
+import ListingPagination, { LISTING_PAGE_SIZE } from "@/components/ListingPagination";
 import api from "@/lib/api";
+import RoomLoader from "@/components/RoomLoader";
 
 
 export default function ListingsPage() {
@@ -16,12 +19,14 @@ export default function ListingsPage() {
   const [showForm, setShowForm] = useState(false);
   const [user, setUser] = useState(null);
   const [favoriteIds, setFavoriteIds] = useState(() => new Set());
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [filters, setFilters] = useState({
     search: "",
     status: "",
     types: [],
     maxPrice: null,
+    spaces: [],
   });
 
   useEffect(() => {
@@ -75,6 +80,12 @@ export default function ListingsPage() {
     // Type filter
     if (filters.types && filters.types.length > 0) {
       result = result.filter((listing) => filters.types.includes(listing.type));
+    }
+
+    if (filters.spaces?.length) {
+      result = result.filter((listing) =>
+        filters.spaces.every((space) => listing.spaces?.[space])
+      );
     }
 
     // Price filter
@@ -149,6 +160,16 @@ export default function ListingsPage() {
     await fetchListings();
   }
 
+  function handleFiltersChange(nextFilters) {
+    setFilters(nextFilters);
+    setCurrentPage(1);
+  }
+
+  const paginatedListings = filteredListings.slice(
+    (currentPage - 1) * LISTING_PAGE_SIZE,
+    currentPage * LISTING_PAGE_SIZE
+  );
+
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
@@ -191,11 +212,12 @@ export default function ListingsPage() {
       {/* Filters */}
       <ListingFilters
         filters={filters}
-        onFiltersChange={setFilters}
+        onFiltersChange={handleFiltersChange}
         catalogStyle
-        onReset={() =>
-          setFilters({ search: "", status: "", types: [], maxPrice: null })
-        }
+        onReset={() => {
+          setFilters({ search: "", status: "", types: [], maxPrice: null, spaces: [] })
+          setCurrentPage(1);
+        }}
         totalCount={filteredListings.length}
       />
 
@@ -229,7 +251,7 @@ export default function ListingsPage() {
         {/* Content */}
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500"></div>
+            <RoomLoader size="md" label="Chargement des logements" />
           </div>
         ) : error ? (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
@@ -259,17 +281,25 @@ export default function ListingsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {filteredListings.map((listing) => (
-              <ListingCardV2
-                key={listing.id}
-                listing={listing}
-                canFavorite={!!user}
-                isFavorite={favoriteIds.has(listing.id)}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
-          </div>
+          <>
+            <ListingGrid>
+              {paginatedListings.map((listing) => (
+                <ListingCardV2
+                  key={listing.id}
+                  listing={listing}
+                  canFavorite={!!user}
+                  isFavorite={favoriteIds.has(listing.id)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              ))}
+            </ListingGrid>
+            <ListingPagination
+              currentPage={currentPage}
+              totalItems={filteredListings.length}
+              onPageChange={setCurrentPage}
+              label="Pagination du catalogue"
+            />
+          </>
         )}
       </div>
 

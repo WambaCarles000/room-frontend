@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/browser";
 import ProfileSettingsModal from "@/components/ProfileSettingsModal";
+import RoomLoader from "@/components/RoomLoader";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function SettingsPage() {
   if (!ready) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-zinc-200 border-t-primary-500" />
+        <RoomLoader size="md" label="Chargement des paramètres" />
       </div>
     );
   }
