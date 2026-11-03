@@ -152,8 +152,8 @@ export default function ListingsPage() {
   return (
     <div className="min-h-screen bg-zinc-50">
       {/* Header */}
-      <div className="bg-white">
-        <div className="mx-auto max-w-[1600px] px-4 py-4 sm:px-6 lg:px-8">
+      <div className="border-b border-zinc-200 bg-zinc-50">
+        <div className="mx-auto max-w-[1600px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-zinc-900">

@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser";
+import { isValidPhoneNumber } from "react-phone-number-input";
+import PhoneNumberField from "@/components/PhoneNumberField";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
@@ -25,6 +27,10 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    if (phone && !isValidPhoneNumber(phone)) {
+      setError("Saisissez un numéro de téléphone valide.");
+      return;
+    }
     setLoading(true);
     try {
       const supabase = createClient();
@@ -293,13 +299,12 @@ export default function SignupPage() {
           </div> */}
 
           <div className="space-y-1">
-            <label className="text-sm font-medium">Téléphone (optionnel)</label>
-            <input
-              type="tel"
+            <label htmlFor="signup_phone" className="text-sm font-medium">Téléphone (optionnel)</label>
+            <PhoneNumberField
+              id="signup_phone"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 outline-none focus:border-zinc-400"
-              placeholder="+237 6XX XXX XXX"
+              onChange={setPhone}
+              placeholder="6 90 00 00 00"
             />
             <p className="text-xs text-zinc-600">
               Recommandé si vous comptez publier une annonce (vous pourrez aussi l&apos;ajouter plus tard dans le profil).

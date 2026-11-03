@@ -1,6 +1,6 @@
-export default function ListingSearchBar({ value, onChange }) {
+export default function ListingSearchBar({ value, onChange, className = "" }) {
   return (
-    <div className="relative mx-auto w-full max-w-2xl">
+    <div className={`relative w-full ${className || "mx-auto max-w-2xl"}`}>
       <div className="absolute left-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-primary-500">
         <svg
           className="h-3.5 w-3.5 text-white"

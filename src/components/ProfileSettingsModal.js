@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { z } from "zod";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { createClient } from "@/lib/supabase/browser";
 import api from "@/lib/api";
+import PhoneNumberField from "@/components/PhoneNumberField";
 
 const settingsSchema = z.object({
   first_name: z.string().min(2, "Le prénom doit faire au moins 2 caractères"),
@@ -123,6 +125,11 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
     const result = settingsSchema.safeParse(raw);
     if (!result.success) {
       setError(result.error.issues[0].message);
+      setLoading(false);
+      return;
+    }
+    if (result.data.phone && !isValidPhoneNumber(result.data.phone)) {
+      setError("Saisissez un numéro de téléphone valide.");
       setLoading(false);
       return;
     }
@@ -315,14 +322,12 @@ export default function ProfileSettingsModal({ isOpen, onClose, onSuccess }) {
                 <label htmlFor="settings_phone" className="block text-sm font-medium text-zinc-900 mb-1">
                   Téléphone
                 </label>
-                <input
+                <PhoneNumberField
                   id="settings_phone"
                   name="phone"
-                  type="tel"
                   value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                  placeholder="+237 XXX XXX XXX"
+                  onChange={(phone) => setFormData((previous) => ({ ...previous, phone }))}
+                  placeholder="6 90 00 00 00"
                 />
                 <p className="mt-1 text-xs text-zinc-500">
                   Requis pour publier une annonce et être contacté.

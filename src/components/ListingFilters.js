@@ -75,18 +75,16 @@ export default function ListingFilters({
     filters.showHidden;
 
   return (
-    <div className={`sticky top-16 z-30 bg-white ${catalogStyle ? "" : "border-b border-zinc-200"}`}>
+    <div className={`sticky top-16 z-30 ${catalogStyle ? "border-b border-zinc-200 bg-white/95 shadow-sm backdrop-blur" : "bg-white border-b border-zinc-200"}`}>
       <div className={`mx-auto ${catalogStyle ? "max-w-[1600px]" : "max-w-7xl"} px-4 sm:px-6 lg:px-8`}>
-        {/* Search Bar */}
-        <div className={catalogStyle ? "py-2" : "py-3"}>
+        <div className={catalogStyle ? "py-3 xl:grid xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.45fr)] xl:items-center xl:gap-5" : "py-3"}>
           <ListingSearchBar
             value={filters.search || ""}
             onChange={handleSearchChange}
+            className={catalogStyle ? "max-w-none" : ""}
           />
-        </div>
 
-        {/* ✅ Desktop Filters Bar - AVEC FLEX-WRAP */}
-        <div className={`hidden lg:flex gap-3 flex-wrap items-center ${catalogStyle ? "pb-3" : "py-3"}`}>
+        <div className={`hidden lg:flex gap-3 flex-wrap items-center ${catalogStyle ? "pt-3 xl:pt-0" : "py-3"}`}>
           {/* Status Filter */}
           <select
             value={filters.status || ""}
@@ -172,6 +170,7 @@ export default function ListingFilters({
           <div className="ml-auto flex items-center text-sm text-zinc-600 shrink-0">
             {totalCount} résultat{totalCount !== 1 ? "s" : ""}
           </div>
+        </div>
         </div>
 
         {/* ✅ BREAKPOINT INTERMÉDIAIRE (sm à lg) - PLUS COMPACT */}

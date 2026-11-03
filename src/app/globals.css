@@ -31,6 +31,60 @@
   --color-accent-500: #22c55e;
 }
 
+:root {
+  --PhoneInput-color--focus: #0369a1;
+  --PhoneInputCountrySelectArrow-color: #0369a1;
+  --PhoneInputCountrySelectArrow-opacity: 0.8;
+  --PhoneInputCountryFlag-borderColor: #d4d4d8;
+}
+
+.PhoneInput {
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.PhoneInputCountry {
+  height: 2.75rem;
+  margin-right: 0;
+  padding: 0 0.75rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 0.5rem;
+  background: #fff;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.PhoneInputCountry:focus-within {
+  border-color: #0369a1;
+  box-shadow: 0 0 0 1px #0369a1;
+}
+
+.PhoneInputCountrySelectArrow {
+  margin-left: 0.5rem;
+}
+
+.PhoneInputInput {
+  height: 2.75rem;
+  min-width: 0;
+  padding: 0 0.75rem;
+  border: 1px solid #d4d4d8;
+  border-radius: 0.5rem;
+  background: #fff;
+  color: #18181b;
+  font: inherit;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.PhoneInputInput::placeholder {
+  color: #71717a;
+}
+
+.PhoneInputInput:focus {
+  border-color: #0369a1;
+  box-shadow: 0 0 0 1px #0369a1;
+}
+
 @media (max-width: 767px) {
   input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"]),
   textarea,
