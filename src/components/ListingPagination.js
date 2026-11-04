@@ -23,6 +23,11 @@ export default function ListingPagination({
     (_, index) => startPage + index
   );
 
+  const handlePageChange = (page) => {
+    onPageChange(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const buttonClass =
     "inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500";
 
@@ -37,7 +42,7 @@ export default function ListingPagination({
       <div className="flex items-center gap-1.5">
         <button
           type="button"
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className={`${buttonClass} border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40`}
           aria-label="Page précédente"
@@ -50,7 +55,7 @@ export default function ListingPagination({
           <>
             <button
               type="button"
-              onClick={() => onPageChange(1)}
+              onClick={() => handlePageChange(1)}
               className={`${buttonClass} min-w-10 border-zinc-200 px-2 text-zinc-700 hover:bg-zinc-100`}
               aria-label="Page 1"
             >
@@ -64,7 +69,7 @@ export default function ListingPagination({
           <button
             key={page}
             type="button"
-            onClick={() => onPageChange(page)}
+            onClick={() => handlePageChange(page)}
             aria-label={`Page ${page}`}
             aria-current={page === currentPage ? "page" : undefined}
             className={`${buttonClass} min-w-10 px-2 ${
@@ -82,7 +87,7 @@ export default function ListingPagination({
             {endPage < totalPages - 1 && <span className="px-1 text-zinc-400" aria-hidden="true">…</span>}
             <button
               type="button"
-              onClick={() => onPageChange(totalPages)}
+              onClick={() => handlePageChange(totalPages)}
               className={`${buttonClass} min-w-10 border-zinc-200 px-2 text-zinc-700 hover:bg-zinc-100`}
               aria-label={`Page ${totalPages}`}
             >
@@ -93,7 +98,7 @@ export default function ListingPagination({
 
         <button
           type="button"
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className={`${buttonClass} border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:pointer-events-none disabled:opacity-40`}
           aria-label="Page suivante"
